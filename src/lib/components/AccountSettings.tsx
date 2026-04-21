@@ -4,12 +4,6 @@ import { useState } from "react"
 import { useLang } from "@/lib/hooks/useLang"
 import type { Profile } from "@/lib/utils"
 
-const MONEY_UNITS = [
-  { key: "yen", factor: 1, ja: "円", en: "Yen" },
-  { key: "thousand", factor: 1000, ja: "千円", en: "1K" },
-  { key: "man", factor: 10000, ja: "万円", en: "10K" },
-] as const
-
 interface Props {
   user: {
     id: string
@@ -24,56 +18,14 @@ export default function AccountSettings({ user, profile, onClose, onProfileUpdat
   const lang = useLang()
   const t = (ja: string, en: string) => (lang === "en" ? en : ja)
   const [displayName, setDisplayName] = useState(profile?.display_name ?? "")
-  const [takeHome, setTakeHome] = useState(() => {
-    const value = Number(profile?.allocation_take_home || 0)
-    return value > 0 ? String(value) : ""
-  })
-  const [takeHomeUnit, setTakeHomeUnit] = useState<1 | 1000 | 10000>(1)
-  const [savingsGoal, setSavingsGoal] = useState(() => {
-    if (typeof window === "undefined") return ""
-    const parsed = Number(window.localStorage.getItem("kakeibo-savings-goal") || 0)
-    return parsed > 0 ? String(parsed) : ""
-  })
-  const [savingsGoalUnit, setSavingsGoalUnit] = useState<1 | 1000 | 10000>(1)
   const [savingProfile, setSavingProfile] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
-
-  function switchUnit(
-    currentValue: string,
-    currentUnit: 1 | 1000 | 10000,
-    nextUnit: 1 | 1000 | 10000,
-    setter: (next: string) => void,
-    unitSetter: (next: 1 | 1000 | 10000) => void
-  ) {
-    if (currentUnit === nextUnit) return
-    const raw = Number(currentValue || 0)
-    if (!Number.isFinite(raw) || raw <= 0) {
-      unitSetter(nextUnit)
-      return
-    }
-    const normalized = raw * currentUnit
-    setter(String(Math.round((normalized / nextUnit) * 10) / 10))
-    unitSetter(nextUnit)
-  }
 
   async function handleSaveProfile() {
     setMessage(null)
     setSavingProfile(true)
 
     try {
-      const normalizedTakeHome = Number(takeHome || 0) * takeHomeUnit
-      const normalizedSavingsGoal = Number(savingsGoal || 0) * savingsGoalUnit
-
-      if (takeHome && (!Number.isFinite(normalizedTakeHome) || normalizedTakeHome <= 0)) {
-        setMessage({ type: "error", text: t("手取りは 1 以上で入力してください。", "Take-home pay must be 1 or more.") })
-        return
-      }
-
-      if (savingsGoal && (!Number.isFinite(normalizedSavingsGoal) || normalizedSavingsGoal < 0)) {
-        setMessage({ type: "error", text: t("貯金目標は 0 以上で入力してください。", "Savings goal must be 0 or more.") })
-        return
-      }
-
       const response = await fetch("/api/profile", {
         method: "POST",
         headers: {
@@ -82,10 +34,10 @@ export default function AccountSettings({ user, profile, onClose, onProfileUpdat
         body: JSON.stringify({
           display_name: displayName.trim() || null,
           currency: profile?.currency ?? "JPY",
-          allocation_take_home: takeHome ? Math.round(normalizedTakeHome) : null,
-          allocation_target_fixed_rate: profile?.allocation_target_fixed_rate ?? 35,
-          allocation_target_variable_rate: profile?.allocation_target_variable_rate ?? 25,
-          allocation_target_savings_rate: profile?.allocation_target_savings_rate ?? 20,
+          allocation_take_home: profile?.allocation_take_home ?? null,
+          allocation_target_fixed_rate: profile?.allocation_target_fixed_rate ?? null,
+          allocation_target_variable_rate: profile?.allocation_target_variable_rate ?? null,
+          allocation_target_savings_rate: profile?.allocation_target_savings_rate ?? null,
         }),
       })
       const result = await response.json()
@@ -93,11 +45,6 @@ export default function AccountSettings({ user, profile, onClose, onProfileUpdat
       if (!response.ok || !result.profile) {
         setMessage({ type: "error", text: t("プロフィール保存に失敗しました。", "Could not save your profile.") })
         return
-      }
-
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("kakeibo-savings-goal", String(Math.round(normalizedSavingsGoal || 0)))
-        window.dispatchEvent(new Event("kakeibo-goals-updated"))
       }
 
       onProfileUpdated(result.profile)
@@ -147,60 +94,6 @@ export default function AccountSettings({ user, profile, onClose, onProfileUpdat
             placeholder={t("表示名", "Display Name")}
             className="w-full bg-slate-950 border border-slate-500 rounded-xl px-4 py-3 text-slate-50 placeholder-slate-400 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/30"
           />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-slate-200">{t("今月の手取り", "Take-home pay this month")}</p>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              inputMode="decimal"
-              value={takeHome}
-              onChange={(event) => setTakeHome(event.target.value)}
-              placeholder={t("金額", "Amount")}
-              className="w-full bg-slate-950 border border-slate-500 rounded-xl px-4 py-3 text-slate-50 placeholder-slate-400 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/30"
-            />
-            <div className="flex gap-1">
-              {MONEY_UNITS.map((unit) => (
-                <button
-                  key={unit.key}
-                  type="button"
-                  onClick={() => switchUnit(takeHome, takeHomeUnit, unit.factor as 1 | 1000 | 10000, setTakeHome, setTakeHomeUnit)}
-                  className={`px-3 py-3 rounded-xl text-xs border ${takeHomeUnit === unit.factor ? "bg-sky-600 border-sky-500 text-white" : "bg-slate-950 border-slate-500 text-slate-200"}`}
-                >
-                  {lang === "en" ? unit.en : unit.ja}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-slate-200">{t("毎月の貯金目標", "Monthly savings goal")}</p>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              inputMode="decimal"
-              value={savingsGoal}
-              onChange={(event) => setSavingsGoal(event.target.value)}
-              placeholder={t("金額", "Amount")}
-              className="w-full bg-slate-950 border border-slate-500 rounded-xl px-4 py-3 text-slate-50 placeholder-slate-400 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/30"
-            />
-            <div className="flex gap-1">
-              {MONEY_UNITS.map((unit) => (
-                <button
-                  key={unit.key}
-                  type="button"
-                  onClick={() => switchUnit(savingsGoal, savingsGoalUnit, unit.factor as 1 | 1000 | 10000, setSavingsGoal, setSavingsGoalUnit)}
-                  className={`px-3 py-3 rounded-xl text-xs border ${savingsGoalUnit === unit.factor ? "bg-sky-600 border-sky-500 text-white" : "bg-slate-950 border-slate-500 text-slate-200"}`}
-                >
-                  {lang === "en" ? unit.en : unit.ja}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         <button type="button" onClick={handleSaveProfile} disabled={savingProfile} className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-medium disabled:opacity-50">
