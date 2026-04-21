@@ -841,6 +841,12 @@ export default function Home() {
             </div>
           </header>
 
+          <footer className="mt-2 flex flex-wrap justify-center gap-4 text-xs text-slate-500">
+            <Link href="/privacy" className="hover:text-slate-300 transition">{lang === "en" ? "Privacy Policy" : "プライバシーポリシー"}</Link>
+            <Link href="/terms" className="hover:text-slate-300 transition">{lang === "en" ? "Terms of Service" : "利用規約"}</Link>
+            <Link href="/contact" className="hover:text-slate-300 transition">{lang === "en" ? "Contact" : "お問い合わせ"}</Link>
+          </footer>
+
           {guestOnboardingStep === "welcome" ? (
             <WelcomeView onStartAuth={openAccountEntrance} onStartGuest={openGuestEntrance} />
           ) : guestOnboardingStep === "consent" ? (
