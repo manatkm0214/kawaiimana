@@ -2,7 +2,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install --include=dev
 
 COPY . .
 # .env.production は COPY . . で含まれる（NEXT_PUBLIC_ 変数のみ）
