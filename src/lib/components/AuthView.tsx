@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { FaEnvelope, FaLine } from "react-icons/fa"
+import { FaEnvelope, FaGoogle, FaLine } from "react-icons/fa"
 import { useLang } from "@/lib/hooks/useLang"
 
 interface AuthViewProps {
@@ -280,7 +280,10 @@ export default function AuthView({ onAuth, onBack, initialMessage, initialEmail,
                 boxShadow: "0 8px 20px -12px rgba(15,23,42,0.18)",
               }}
             >
-              {t("Googleで続ける", "Continue with Google")}
+              <span className="inline-flex items-center gap-2">
+                <FaGoogle />
+                {t("Googleで続ける", "Continue with Google")}
+              </span>
             </button>
 
             <button

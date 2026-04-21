@@ -13,6 +13,8 @@ env_variables:
   CONTACT_TO_EMAIL: "mana0214tkm@gmail.com"
   CONTACT_FROM_EMAIL: "onboarding@resend.dev"
   EMAIL_FROM: "onboarding@resend.dev"
+  APP_BASE_URL: "https://kakeibo-app-wut4b4fcza-an.a.run.app"
+  NEXT_PUBLIC_SITE_URL: "https://kakeibo-app-wut4b4fcza-an.a.run.app"
   AUTH0_DOMAIN: "dev-mlg3q0p27ecq1qnh.us.auth0.com"
   LINE_CHANNEL_ID: "2009682313"
   # シークレット値は gcloud run services update --update-env-vars で設定すること

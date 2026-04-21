@@ -4,7 +4,6 @@ import { auth0 } from "@/lib/auth0"
 const ALLOWED_CONNECTIONS = new Set([
   "google-oauth2",
   "line",
-  "line",
   "Username-Password-Authentication",
 ])
 
