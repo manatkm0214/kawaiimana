@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
+  const baseUrl = process.env.APP_BASE_URL || "https://kakeibo-app-582962059044.asia-northeast1.run.app"
   return NextResponse.json({
-    issuer: "https://kawaii0214.vercel.app",
-    authorization_endpoint: "https://kawaii0214.vercel.app/oauth/authorize",
-    token_endpoint: "https://kawaii0214.vercel.app/oauth/token",
-    userinfo_endpoint: "https://kawaii0214.vercel.app/oauth/userinfo",
-    jwks_uri: "https://kawaii0214.vercel.app/.well-known/jwks.json",
+    issuer: baseUrl,
+    authorization_endpoint: `${baseUrl}/oauth/authorize`,
+    token_endpoint: `${baseUrl}/oauth/token`,
+    userinfo_endpoint: `${baseUrl}/oauth/userinfo`,
+    jwks_uri: `${baseUrl}/.well-known/jwks.json`,
     response_types_supported: ["code", "id_token", "token id_token"],
     subject_types_supported: ["public"],
     id_token_signing_alg_values_supported: ["RS256"],

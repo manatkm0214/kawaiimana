@@ -32,13 +32,13 @@
   },
   "devDependencies": {
     "@netlify/plugin-nextjs": "^5.14.4",
-    "@tailwindcss/postcss": "^4.2.2",
+    "@tailwindcss/postcss": "^4.2.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
-    "tailwindcss": "^4",
+    "eslint-config-next": "15.5.15",
+    "tailwindcss": "^4.2.4",
     "typescript": "^5"
   },
   "overrides": {

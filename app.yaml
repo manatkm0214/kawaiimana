@@ -1,0 +1,18 @@
+runtime: nodejs20
+instance_class: F2
+entrypoint: node .next/standalone/server.js
+
+env_variables:
+  NODE_ENV: "production"
+  PORT: "8080"
+  SUPABASE_HOOK_SKIP_VERIFY: "true"
+  SUPABASE_LINE_PROVIDER: "line"
+  GEMINI_MODEL: "gemini-2.5-flash"
+  OPENAI_MODEL: "gpt-4.1-mini"
+  NX_DAEMON: "false"
+  CONTACT_TO_EMAIL: "mana0214tkm@gmail.com"
+  CONTACT_FROM_EMAIL: "onboarding@resend.dev"
+  EMAIL_FROM: "onboarding@resend.dev"
+  AUTH0_DOMAIN: "dev-mlg3q0p27ecq1qnh.us.auth0.com"
+  LINE_CHANNEL_ID: "2009682313"
+  # シークレット値は gcloud run services update --update-env-vars で設定すること
