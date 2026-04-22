@@ -276,8 +276,11 @@ export default function Home() {
     setOnboardingStep("consent");
   }, []);
 
-  const syncSessionToHome = useCallback(async () => {
-    window.location.href = "/auth/login";
+  const syncSessionToHome = useCallback(async (_mode?: string, email?: string) => {
+    const url = email?.trim()
+      ? `/auth/login?login_hint=${encodeURIComponent(email.trim())}`
+      : "/auth/login";
+    window.location.href = url;
   }, []);
 
   const loadData = useCallback(async () => {
