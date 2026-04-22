@@ -143,6 +143,10 @@ export default function AuthView({ onAuth, onBack, initialMessage, initialEmail,
   const [email, setEmail] = useState(initialEmail || otpEmail || "")
 
   function startLogin(mode: "login" | "register", connection?: "google-oauth2" | "line") {
+    if (connection === "line") {
+      window.location.href = "/api/auth/line/start"
+      return
+    }
     if (connection) {
       window.location.href = `/auth/login?connection=${encodeURIComponent(connection)}`
       return

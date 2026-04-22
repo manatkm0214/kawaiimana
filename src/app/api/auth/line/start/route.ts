@@ -69,7 +69,6 @@ export async function GET(request: Request) {
   })
 
   const authUrl = `https://access.line.me/oauth2/v2.1/authorize?${params.toString()}`
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(authUrl)}`
 
-  return NextResponse.json({ authUrl, qrUrl })
+  return NextResponse.redirect(authUrl)
 }

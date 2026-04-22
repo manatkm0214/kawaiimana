@@ -1,4 +1,5 @@
 import { auth0 } from "@/lib/auth0"
+import { createClient } from "@/lib/supabase/server"
 import { getSupabaseAdmin } from "@/lib/supabase/admin"
 
 export interface AppSessionUser {
@@ -146,10 +147,37 @@ async function ensureProfile(userId: string, name: string | null, email: string,
   }
 }
 
+async function getAppSessionUserFromSupabase(): Promise<AppSessionUser | null> {
+  try {
+    const supabase = await createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) return null
+
+    const supabaseUser = session.user
+    const email = supabaseUser.email ?? ""
+    const lineId = supabaseUser.user_metadata?.line_id as string | undefined
+    const auth0Sub = lineId ? `line|${lineId}` : `supabase|${supabaseUser.id}`
+    const name = (supabaseUser.user_metadata?.display_name as string | undefined) ?? null
+    const picture = (supabaseUser.user_metadata?.picture as string | undefined) ?? null
+
+    await ensureProfile(supabaseUser.id, name, email, auth0Sub)
+
+    return {
+      auth0Sub,
+      email,
+      name,
+      picture,
+      supabaseUserId: supabaseUser.id,
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function getAppSessionUser(): Promise<AppSessionUser | null> {
   const session = await auth0.getSession()
   if (!session?.user) {
-    return null
+    return getAppSessionUserFromSupabase()
   }
 
   const rawEmail = typeof session.user.email === "string" ? session.user.email.trim().toLowerCase() : ""
