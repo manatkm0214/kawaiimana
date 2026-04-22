@@ -1,5 +1,6 @@
+import { createHmac, timingSafeEqual } from "crypto"
+import { cookies } from "next/headers"
 import { auth0 } from "@/lib/auth0"
-import { createClient } from "@/lib/supabase/server"
 import { getSupabaseAdmin } from "@/lib/supabase/admin"
 
 export interface AppSessionUser {
@@ -147,27 +148,51 @@ async function ensureProfile(userId: string, name: string | null, email: string,
   }
 }
 
-async function getAppSessionUserFromSupabase(): Promise<AppSessionUser | null> {
+interface LineSessionPayload {
+  supabaseUserId: string
+  email: string
+  name: string | null
+  picture: string | null
+  auth0Sub: string
+  exp: number
+}
+
+function verifyLineSessionCookie(cookieValue: string, secret: string): LineSessionPayload | null {
   try {
-    const supabase = await createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session?.user) return null
+    const dotIndex = cookieValue.lastIndexOf(".")
+    if (dotIndex === -1) return null
+    const data = cookieValue.slice(0, dotIndex)
+    const sig = cookieValue.slice(dotIndex + 1)
+    const expected = createHmac("sha256", secret).update(data).digest("base64url")
+    if (!timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null
+    const payload = JSON.parse(Buffer.from(data, "base64url").toString()) as LineSessionPayload
+    if (payload.exp < Math.floor(Date.now() / 1000)) return null
+    return payload
+  } catch {
+    return null
+  }
+}
 
-    const supabaseUser = session.user
-    const email = supabaseUser.email ?? ""
-    const lineId = supabaseUser.user_metadata?.line_id as string | undefined
-    const auth0Sub = lineId ? `line|${lineId}` : `supabase|${supabaseUser.id}`
-    const name = (supabaseUser.user_metadata?.display_name as string | undefined) ?? null
-    const picture = (supabaseUser.user_metadata?.picture as string | undefined) ?? null
+async function getAppSessionUserFromLineCookie(): Promise<AppSessionUser | null> {
+  try {
+    const cookieStore = await cookies()
+    const cookieValue = cookieStore.get("line_session")?.value
+    if (!cookieValue) return null
 
-    await ensureProfile(supabaseUser.id, name, email, auth0Sub)
+    const secret = process.env.AUTH0_SECRET?.trim() || process.env.LINE_CHANNEL_SECRET?.trim() || ""
+    if (!secret) return null
+
+    const payload = verifyLineSessionCookie(cookieValue, secret)
+    if (!payload) return null
+
+    await ensureProfile(payload.supabaseUserId, payload.name, payload.email, payload.auth0Sub)
 
     return {
-      auth0Sub,
-      email,
-      name,
-      picture,
-      supabaseUserId: supabaseUser.id,
+      auth0Sub: payload.auth0Sub,
+      email: payload.email,
+      name: payload.name,
+      picture: payload.picture,
+      supabaseUserId: payload.supabaseUserId,
     }
   } catch {
     return null
@@ -177,7 +202,7 @@ async function getAppSessionUserFromSupabase(): Promise<AppSessionUser | null> {
 export async function getAppSessionUser(): Promise<AppSessionUser | null> {
   const session = await auth0.getSession()
   if (!session?.user) {
-    return getAppSessionUserFromSupabase()
+    return getAppSessionUserFromLineCookie()
   }
 
   const rawEmail = typeof session.user.email === "string" ? session.user.email.trim().toLowerCase() : ""
