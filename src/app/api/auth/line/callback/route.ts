@@ -32,33 +32,25 @@ function signSessionCookie(payload: object, secret: string): string {
 async function findOrCreateSupabaseUser(email: string, displayName: string, lineUserId: string): Promise<{ id: string | null; error: string | null }> {
   const supabaseAdmin = getSupabaseAdmin()
 
-  const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+  // generateLink はユーザーが存在しない場合は作成し、存在する場合はそのまま返す
+  const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+    type: "magiclink",
     email,
-    email_confirm: true,
-    user_metadata: { display_name: displayName, line_id: lineUserId },
+    options: {
+      data: { display_name: displayName, line_id: lineUserId },
+    },
   })
 
-  if (!createError && createData?.user) {
-    return { id: createData.user.id, error: null }
+  if (error) {
+    return { id: null, error: `generateLink失敗: ${error.message}` }
   }
 
-  const isAlreadyExists = createError?.message?.toLowerCase().includes("already")
-  if (createError && !isAlreadyExists) {
-    return { id: null, error: `createUser失敗: ${createError.message}` }
+  const userId = data?.user?.id
+  if (!userId) {
+    return { id: null, error: "userIDが取得できませんでした" }
   }
 
-  // Already exists — find by email
-  let page = 1
-  while (page <= 5) {
-    const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 })
-    if (listError) return { id: null, error: `listUsers失敗: ${listError.message}` }
-    const found = listData?.users?.find((u) => u.email === email)
-    if (found) return { id: found.id, error: null }
-    if ((listData?.users?.length ?? 0) < 1000) break
-    page++
-  }
-
-  return { id: null, error: "ユーザーが見つかりませんでした" }
+  return { id: userId, error: null }
 }
 
 export async function GET(request: NextRequest) {
