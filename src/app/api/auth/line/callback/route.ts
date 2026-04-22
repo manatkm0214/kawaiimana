@@ -29,7 +29,7 @@ function signSessionCookie(payload: object, secret: string): string {
   return `${data}.${sig}`
 }
 
-async function findOrCreateSupabaseUser(email: string, displayName: string, lineUserId: string) {
+async function findOrCreateSupabaseUser(email: string, displayName: string, lineUserId: string): Promise<{ id: string | null; error: string | null }> {
   const supabaseAdmin = getSupabaseAdmin()
 
   const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -39,20 +39,26 @@ async function findOrCreateSupabaseUser(email: string, displayName: string, line
   })
 
   if (!createError && createData?.user) {
-    return createData.user.id
+    return { id: createData.user.id, error: null }
+  }
+
+  const isAlreadyExists = createError?.message?.toLowerCase().includes("already")
+  if (createError && !isAlreadyExists) {
+    return { id: null, error: `createUser失敗: ${createError.message}` }
   }
 
   // Already exists — find by email
   let page = 1
   while (page <= 5) {
-    const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 })
+    const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 })
+    if (listError) return { id: null, error: `listUsers失敗: ${listError.message}` }
     const found = listData?.users?.find((u) => u.email === email)
-    if (found) return found.id
+    if (found) return { id: found.id, error: null }
     if ((listData?.users?.length ?? 0) < 1000) break
     page++
   }
 
-  return null
+  return { id: null, error: "ユーザーが見つかりませんでした" }
 }
 
 export async function GET(request: NextRequest) {
@@ -122,9 +128,9 @@ export async function GET(request: NextRequest) {
   const safeLineId = lineUserId.replace(/[^a-zA-Z0-9]/g, "")
   const email = `line_${safeLineId}@line.placeholder`
 
-  const supabaseUserId = await findOrCreateSupabaseUser(email, displayName, lineUserId)
+  const { id: supabaseUserId, error: userError } = await findOrCreateSupabaseUser(email, displayName, lineUserId)
   if (!supabaseUserId) {
-    homeUrl.searchParams.set("auth_error", "ユーザーの作成または取得に失敗しました")
+    homeUrl.searchParams.set("auth_error", `Supabaseエラー: ${userError ?? "不明"}`)
     return NextResponse.redirect(homeUrl.toString())
   }
 
