@@ -83,22 +83,20 @@ export async function GET(request: NextRequest) {
   const lineUserId = lineProfile.userId
   const displayName = lineProfile.displayName ?? ""
 
-  const email = `line_${lineUserId}@line.placeholder`
+  const safeLineId = lineUserId.replace(/[^a-zA-Z0-9]/g, "")
+  const email = `line_${safeLineId}@line.placeholder`
   const supabaseAdmin = getSupabaseAdmin()
 
-  const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 })
-  const existingUser = listData?.users?.find((u) => u.email === email)
+  // ユーザーを作成（既存の場合はエラーを無視して続行）
+  const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: { display_name: displayName, line_id: lineUserId },
+  })
 
-  if (!existingUser) {
-    const { error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      email_confirm: true,
-      user_metadata: { display_name: displayName, line_id: lineUserId },
-    })
-    if (createError) {
-      homeUrl.searchParams.set("auth_error", "ユーザー作成に失敗しました")
-      return NextResponse.redirect(homeUrl.toString())
-    }
+  if (createError && !createError.message.toLowerCase().includes("already")) {
+    homeUrl.searchParams.set("auth_error", `LINE認証エラー: ${createError.message}`)
+    return NextResponse.redirect(homeUrl.toString())
   }
 
   const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
@@ -108,7 +106,7 @@ export async function GET(request: NextRequest) {
   })
 
   if (linkError ?? !linkData?.properties?.hashed_token) {
-    homeUrl.searchParams.set("auth_error", "ログインリンクの生成に失敗しました")
+    homeUrl.searchParams.set("auth_error", `ログインリンク生成エラー: ${linkError?.message ?? "トークンなし"}`)
     return NextResponse.redirect(homeUrl.toString())
   }
 
