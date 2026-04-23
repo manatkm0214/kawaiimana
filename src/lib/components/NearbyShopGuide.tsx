@@ -151,28 +151,29 @@ export default function NearbyShopGuide({
     const endpoints = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
     for (const ep of endpoints) {
       try {
-        const res = await fetch(ep, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: `data=${encodeURIComponent(query)}`,
-        });
+        const res = await fetch(`${ep}?data=${encodeURIComponent(query)}`);
         if (!res.ok) { console.warn("[overpass] failed:", ep, res.status); continue; }
         const data = (await res.json()) as { elements?: Array<{ id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }> };
-        return (data.elements ?? [])
-          .filter(e => e.tags?.name)
-          .map(e => ({
-            id: String(e.id),
-            name: e.tags!.name!,
-            kind: e.tags?.shop ?? e.tags?.amenity ?? cKind,
-            distanceKm: distanceKm(lat, lon, e.lat ?? e.center!.lat, e.lon ?? e.center!.lon),
-            lat: e.lat ?? e.center!.lat,
-            lng: e.lon ?? e.center!.lon,
-            address: [e.tags?.["addr:city"], e.tags?.["addr:street"]].filter(Boolean).join(" "),
-            placeId: "",
-          }))
+        const items = (data.elements ?? [])
+          .filter(e => e.tags?.name && (e.lat != null || e.center != null))
+          .map(e => {
+            const eLat = e.lat ?? e.center!.lat;
+            const eLon = e.lon ?? e.center!.lon;
+            return {
+              id: String(e.id),
+              name: e.tags!.name!,
+              kind: e.tags?.shop ?? e.tags?.amenity ?? cKind,
+              distanceKm: distanceKm(lat, lon, eLat, eLon),
+              lat: eLat,
+              lng: eLon,
+              address: [e.tags?.["addr:city"], e.tags?.["addr:street"]].filter(Boolean).join(" "),
+              placeId: "",
+            };
+          })
           .sort((a, b) => a.distanceKm - b.distanceKm)
           .slice(0, 6);
-      } catch { continue; }
+        return items;
+      } catch (e) { console.warn("[overpass] error:", ep, e); continue; }
     }
     throw new Error(t("周辺のお店情報を取得できませんでした。時間をおいて再試行してください。", "Could not fetch nearby shops. Please try again later."));
   }
