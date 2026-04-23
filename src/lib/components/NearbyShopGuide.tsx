@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { formatCurrency, type Transaction } from "@/lib/utils";
 import { useLang } from "@/lib/hooks/useLang";
@@ -21,6 +22,7 @@ type ShopKind =
   | "baby";
 
 type LifestyleMode = "save" | "standard" | "luxury";
+type SearchProvider = "google" | "osm";
 
 type ShopItem = {
   id: string;
@@ -63,6 +65,7 @@ export default function NearbyShopGuide({
   const [customQuery, setCustomQuery] = useState("");
   const [lastSource, setLastSource] = useState<"area" | "current" | null>(null);
   const [budgetLimit, setBudgetLimit] = useState("");
+  const [provider, setProvider] = useState<SearchProvider | null>(null);
 
   const stats = useMemo(() => {
     const monthly = transactions.filter((item) => item.date.startsWith(currentMonth));
@@ -123,8 +126,14 @@ export default function NearbyShopGuide({
         }),
       });
 
-      const data = (await response.json()) as { items?: ShopItem[]; source?: string | null; error?: string };
+      const data = (await response.json()) as {
+        items?: ShopItem[];
+        source?: string | null;
+        provider?: SearchProvider;
+        error?: string;
+      };
       if (!response.ok) {
+        setProvider(null);
         const reason = data.error ? ` (${data.error})` : ` (${response.status})`;
         throw new Error(
           source === "area"
@@ -135,6 +144,11 @@ export default function NearbyShopGuide({
 
       const nextItems = data.items ?? [];
       setShops(nextItems);
+      setProvider(data.provider ?? null);
+
+      const providerNote = data.provider === "osm"
+        ? t("Google Maps が使えないため、代替データで表示しています。", "Showing fallback data because Google Maps is unavailable.")
+        : "";
 
       if (nextItems.length === 0) {
         setStatus(
@@ -147,11 +161,12 @@ export default function NearbyShopGuide({
 
       setStatus(
         source === "area"
-          ? t(`「${data.source || area}」周辺のお店を表示しています。`, `Showing places around ${data.source || area}.`)
-          : t("現在地の近くのお店を表示しています。", "Showing places near your current location."),
+          ? `${t(`「${data.source || area}」周辺のお店を表示しています。`, `Showing places around ${data.source || area}.`)}${providerNote ? ` ${providerNote}` : ""}`
+          : `${t("現在地の近くのお店を表示しています。", "Showing places near your current location.")}${providerNote ? ` ${providerNote}` : ""}`,
       );
     } catch (error) {
       setShops([]);
+      setProvider(null);
       setStatus(error instanceof Error ? error.message : t("お店を取得できませんでした。", "Could not fetch places."));
     } finally {
       setLoading(false);
@@ -178,9 +193,15 @@ export default function NearbyShopGuide({
           "current",
         );
       },
-      () => {
+      (err) => {
         setLoading(false);
-        setStatus(t("現在地の許可が必要です。", "Location permission is required."));
+        if (err.code === 1) {
+          setStatus(t("位置情報の許可が必要です。ブラウザのアドレスバー横のアイコンから許可してください。", "Location permission is required. Please allow it from the browser address bar."));
+        } else if (err.code === 2) {
+          setStatus(t("現在地を取得できませんでした。電波状況を確認してください。", "Could not get your location. Please check your connection."));
+        } else {
+          setStatus(t("現在地の取得がタイムアウトしました。もう一度お試しください。", "Location request timed out. Please try again."));
+        }
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 },
     );
@@ -394,14 +415,15 @@ export default function NearbyShopGuide({
           </div>
         ) : (
           <>
-            {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && shops[0] && (
+            {provider === "google" && process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && shops[0] && (
               <div className="overflow-hidden rounded-2xl border">
-                <img
+                <Image
                   src={`https://maps.googleapis.com/maps/api/staticmap?center=${shops[0].lat},${shops[0].lng}&zoom=14&size=600x200&scale=2${shops.map((s) => `&markers=color:red%7C${s.lat},${s.lng}`).join("")}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
                   alt={t("周辺地図", "Nearby map")}
                   className="w-full object-cover"
                   width={600}
                   height={200}
+                  unoptimized
                 />
               </div>
             )}
@@ -418,7 +440,9 @@ export default function NearbyShopGuide({
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       <span className="text-xs text-black">{shop.distanceKm.toFixed(2)} km</span>
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name)}&query_place_id=${shop.placeId}`}
+                        href={shop.placeId
+                          ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name)}&query_place_id=${shop.placeId}`
+                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${shop.lat},${shop.lng}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="rounded-full bg-cyan-500 px-2 py-0.5 text-xs font-semibold text-white hover:bg-cyan-400"

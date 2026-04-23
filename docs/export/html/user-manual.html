@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>取扱説明書</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 16mm;
+    }
+
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #52607a;
+      --line: #d6dde8;
+      --paper: #ffffff;
+      --accent: #0f766e;
+      --accent-soft: #ecfeff;
+      --code: #0f172a;
+      --code-bg: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 36%),
+        linear-gradient(180deg, #f8fafc, #eef6ff 24%, #ffffff 100%);
+    }
+
+    main {
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 22mm 18mm;
+      background: var(--paper);
+    }
+
+    header {
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 18px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: #0f172a;
+      line-height: 1.3;
+      page-break-after: avoid;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    h2 {
+      margin-top: 28px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+
+    h3 {
+      margin-top: 24px;
+      font-size: 18px;
+    }
+
+    p, li {
+      font-size: 14px;
+      line-height: 1.85;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    ul, ol {
+      margin: 10px 0 10px 22px;
+      padding: 0;
+    }
+
+    li + li {
+      margin-top: 4px;
+    }
+
+    code {
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 0.92em;
+      background: var(--code-bg);
+      color: var(--code);
+      padding: 0.15em 0.35em;
+      border-radius: 6px;
+    }
+
+    pre {
+      overflow: hidden;
+      margin: 16px 0;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--code-bg);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    a {
+      color: #0f766e;
+      text-decoration: none;
+    }
+
+    .meta {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Kakeibo App</p>
+      <h1>取扱説明書</h1>
+      <p class="meta">生成元: docs/user-manual.md | 生成日時: 2026/04/24 3:11</p>
+    </header>
+    <h1>取り扱い説明書</h1>
+<h2>1. はじめに</h2>
+<p>このアプリは、収支の記録、予算管理、AI 相談、生活支援をまとめて行う家計簿です。</p>
+<h2>2. ログイン方法</h2>
+<p>利用できるログイン方法:</p>
+<ul>
+<li>Google</li>
+<li>LINE</li>
+<li>メール</li>
+</ul>
+<p>ログイン後はホームからダッシュボードへ進みます。</p>
+<h2>3. 基本的な使い方</h2>
+<h3>3.1 収支を入力する</h3>
+<ol>
+<li>入力タブを開く</li>
+<li>種別を選ぶ</li>
+<li>金額、日付、カテゴリを入力する</li>
+<li>必要に応じてメモや固定費設定を入れる</li>
+<li>保存する</li>
+</ol>
+<h3>3.2 ダッシュボードを見る</h3>
+<p>確認できる内容:</p>
+<ul>
+<li>当月の収支</li>
+<li>予算との差</li>
+<li>カテゴリごとの使い方</li>
+<li>固定費見直し候補</li>
+<li>安全度と生活レベル</li>
+</ul>
+<h3>3.3 予算を設定する</h3>
+<ol>
+<li>プリセット設定を開く</li>
+<li>収入や配分を入力する</li>
+<li>固定費、変動費、貯蓄、投資の割合を決める</li>
+<li>保存してダッシュボードに反映する</li>
+</ol>
+<h2>4. AI 機能の使い方</h2>
+<h3>4.1 AI 分析</h3>
+<ul>
+<li>家計の状態を文章で確認したいときに使います</li>
+</ul>
+<h3>4.2 AI チャット</h3>
+<ul>
+<li>家計について質問したいときに使います</li>
+</ul>
+<h3>4.3 AI 店案内</h3>
+<ol>
+<li>店種を選ぶ</li>
+<li>エリアを入力するか、現在地検索を使う</li>
+<li>必要なら自由入力キーワードを入れる</li>
+<li>検索結果の一覧と地図を確認する</li>
+</ol>
+<p>使いどころ:</p>
+<ul>
+<li>食料品や日用品の買い物先を探したいとき</li>
+<li>生活圏の候補店を整理したいとき</li>
+<li>予算に合わせて買い物先を絞りたいとき</li>
+</ul>
+<h2>5. 設定</h2>
+<p>設定画面では次の内容を変更できます。</p>
+<ul>
+<li>デザイン</li>
+<li>アカウント情報</li>
+<li>一部表示設定</li>
+</ul>
+<h2>6. 問い合わせ</h2>
+<p>問い合わせページから次を入力して送信できます。</p>
+<ul>
+<li>名前</li>
+<li>メールアドレス</li>
+<li>件名</li>
+<li>本文</li>
+</ul>
+<h2>7. よくあるトラブル</h2>
+<h3>ログインできない</h3>
+<ul>
+<li>ブラウザの Cookie を有効にする</li>
+<li>Auth0 / Google / LINE の設定値を確認する</li>
+</ul>
+<h3>現在地で店案内が使えない</h3>
+<ul>
+<li>ブラウザの位置情報許可を確認する</li>
+<li>通信状況を確認する</li>
+</ul>
+<h3>エリア検索で店が見つからない</h3>
+<ul>
+<li>駅名や市区町村名に変える</li>
+<li>自由入力キーワードを追加する</li>
+</ul>
+<h3>保存できない</h3>
+<ul>
+<li>セッション切れの可能性があります。再ログインしてください</li>
+</ul>
+<h2>8. 運用上の注意</h2>
+<ul>
+<li>実データを扱う場合は本番環境変数を必ず設定してください</li>
+<li>シークレットは <code>.env.local</code> または Vercel 環境変数で管理してください</li>
+<li>SQL migration 未適用だと一部機能が正しく動かない場合があります</li>
+</ul>
+  </main>
+</body>
+</html>

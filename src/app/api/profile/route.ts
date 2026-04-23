@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getAppSessionUser, getAppSessionUserFromRequest } from "@/lib/auth/auth0-app-user"
 import { getSupabaseAdmin } from "@/lib/supabase/admin"
-import { boundedText, readJsonBody } from "@/lib/server/security"
+import { boundedText, rateLimit, readJsonBody, requireSameOrigin } from "@/lib/server/security"
 
 interface ProfilePayload {
   display_name?: string | null
@@ -19,6 +19,9 @@ function normalizeRate(value: unknown) {
 }
 
 export async function POST(request: Request) {
+  const originError = requireSameOrigin(request)
+  if (originError) return originError
+
   const supabaseAdmin = getSupabaseAdmin()
   let user = null
   try {
@@ -32,6 +35,9 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized: no session" }, { status: 401 })
   }
+
+  const rateLimitError = rateLimit(request, "profile", 20, 10 * 60 * 1000, user.supabaseUserId)
+  if (rateLimitError) return rateLimitError
 
   const parsed = await readJsonBody<ProfilePayload>(request, 8_000)
   if (parsed.response) return parsed.response
