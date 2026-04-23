@@ -178,9 +178,15 @@ export default function NearbyShopGuide({
           "current",
         );
       },
-      () => {
+      (err) => {
         setLoading(false);
-        setStatus(t("現在地の許可が必要です。", "Location permission is required."));
+        if (err.code === 1) {
+          setStatus(t("位置情報の許可が必要です。ブラウザのアドレスバー横のアイコンから許可してください。", "Location permission is required. Please allow it from the browser address bar."));
+        } else if (err.code === 2) {
+          setStatus(t("現在地を取得できませんでした。電波状況を確認してください。", "Could not get your location. Please check your connection."));
+        } else {
+          setStatus(t("現在地の取得がタイムアウトしました。もう一度お試しください。", "Location request timed out. Please try again."));
+        }
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 },
     );
