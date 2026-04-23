@@ -2,6 +2,8 @@
 
 > AI搭載のスマート家計管理アプリ（Next.js 15 + TypeScript + Supabase + Auth0）
 
+**本番URL:** https://kawaii0214.vercel.app
+
 ---
 
 ## 機能一覧
@@ -183,9 +185,9 @@ Supabase Dashboard の **SQL Editor** で以下のファイルを順番に実行
 
 ### Auth0
 
-- **Allowed Callback URLs:** `{本番URL}/auth/callback, http://localhost:3000/auth/callback`
-- **Allowed Logout URLs:** `{本番URL}, http://localhost:3000`
-- **Allowed Web Origins:** `{本番URL}, http://localhost:3000`
+- **Allowed Callback URLs:** `https://kawaii0214.vercel.app/auth/callback, http://localhost:3000/auth/callback`
+- **Allowed Logout URLs:** `https://kawaii0214.vercel.app, http://localhost:3000`
+- **Allowed Web Origins:** `https://kawaii0214.vercel.app, http://localhost:3000`
 
 ### Google OAuth (Google Cloud Console)
 
@@ -193,7 +195,7 @@ Supabase Dashboard の **SQL Editor** で以下のファイルを順番に実行
 
 ### LINE Login (LINE Developers)
 
-- **Callback URL:** `{本番URL}/api/auth/line/callback`
+- **Callback URL:** `https://kawaii0214.vercel.app/api/auth/line/callback`
 - Channel IDとChannel Secretを取得し、環境変数に設定
 
 ---
