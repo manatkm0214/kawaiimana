@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAppSessionUser } from "@/lib/auth/auth0-app-user";
 import { boundedText, rateLimit, readJsonBody, requireSameOrigin } from "@/lib/server/security";
 
+export const maxDuration = 30;
+
 type PlaceKind =
   | "budget"
   | "grocery"
@@ -316,11 +318,8 @@ function buildOsmSelectors(kind: PlaceKind, customQuery?: string) {
 
 function buildOsmQuery(lat: number, lon: number, radius: number, kind: PlaceKind, customQuery?: string) {
   const selectors = buildOsmSelectors(kind, customQuery);
-  return `[out:json][timeout:8];
-(
-${selectors.join(";\n").replaceAll("RADIUS", String(radius)).replaceAll("LAT", String(lat)).replaceAll("LON", String(lon))};
-);
-out center tags 12;`;
+  const r = Math.min(radius, 2000);
+  return `[out:json][timeout:12];(${selectors.join(";").replaceAll("RADIUS", String(r)).replaceAll("LAT", String(lat)).replaceAll("LON", String(lon))};);out center tags 8;`;
 }
 
 function buildOsmAddress(tags?: Record<string, string>) {
@@ -381,7 +380,7 @@ async function searchWithOsm(
   for (const endpoint of endpoints) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 9000);
+      const timer = setTimeout(() => controller.abort(), 14000);
       response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=UTF-8" },
@@ -391,13 +390,14 @@ async function searchWithOsm(
       });
       clearTimeout(timer);
       if (response.ok) break;
-    } catch {
+    } catch (e) {
+      console.error("[nearby-shops] endpoint failed:", endpoint, e);
       continue;
     }
   }
 
   if (!response?.ok) {
-    console.error("[nearby-shops] searchWithOsm failed on all endpoints");
+    console.error("[nearby-shops] searchWithOsm failed on all endpoints:", response?.status);
     return { apiError: response?.status ?? 503 };
   }
 
