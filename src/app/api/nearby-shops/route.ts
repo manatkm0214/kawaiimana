@@ -56,10 +56,14 @@ function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return earth * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-async function geocodeArea(area: string, apiKey: string) {
+async function geocodeArea(area: string, apiKey: string): Promise<{ lat: number; lon: number; label: string } | { apiError: number } | null> {
   const url = `${GEOCODING_URL}?address=${encodeURIComponent(area)}&key=${apiKey}&language=ja&region=jp`;
   const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error("[nearby-shops] geocodeArea failed:", res.status, body);
+    return { apiError: res.status };
+  }
   const data = (await res.json()) as {
     results: Array<{ geometry: { location: { lat: number; lng: number } }; formatted_address: string }>;
   };
@@ -159,7 +163,13 @@ export async function POST(req: NextRequest) {
 
     if ((!Number.isFinite(lat) || !Number.isFinite(lon)) && area) {
       const geocoded = await geocodeArea(area, apiKey);
-      if (!geocoded) return NextResponse.json({ error: "area could not be resolved" }, { status: 404 });
+      if (!geocoded) return NextResponse.json({ error: "エリアが見つかりませんでした。別の地名を試してください。" }, { status: 404 });
+      if ("apiError" in geocoded) {
+        const msg = geocoded.apiError === 403
+          ? "Google Maps APIキーが制限されています。Google Cloud ConsoleでGeocodingAPIの制限を確認してください。"
+          : `Geocoding APIエラー (${geocoded.apiError})`;
+        return NextResponse.json({ error: msg }, { status: 502 });
+      }
       lat = geocoded.lat;
       lon = geocoded.lon;
       sourceLabel = geocoded.label;
