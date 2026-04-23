@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>設計書</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 16mm;
+    }
+
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #52607a;
+      --line: #d6dde8;
+      --paper: #ffffff;
+      --accent: #0f766e;
+      --accent-soft: #ecfeff;
+      --code: #0f172a;
+      --code-bg: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 36%),
+        linear-gradient(180deg, #f8fafc, #eef6ff 24%, #ffffff 100%);
+    }
+
+    main {
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 22mm 18mm;
+      background: var(--paper);
+    }
+
+    header {
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 18px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: #0f172a;
+      line-height: 1.3;
+      page-break-after: avoid;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    h2 {
+      margin-top: 28px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+
+    h3 {
+      margin-top: 24px;
+      font-size: 18px;
+    }
+
+    p, li {
+      font-size: 14px;
+      line-height: 1.85;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    ul, ol {
+      margin: 10px 0 10px 22px;
+      padding: 0;
+    }
+
+    li + li {
+      margin-top: 4px;
+    }
+
+    code {
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 0.92em;
+      background: var(--code-bg);
+      color: var(--code);
+      padding: 0.15em 0.35em;
+      border-radius: 6px;
+    }
+
+    pre {
+      overflow: hidden;
+      margin: 16px 0;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--code-bg);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    a {
+      color: #0f766e;
+      text-decoration: none;
+    }
+
+    .meta {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Kakeibo App</p>
+      <h1>設計書</h1>
+      <p class="meta">生成元: docs/design.md | 生成日時: 2026/04/24 2:55</p>
+    </header>
+    <h1>設計書</h1>
+<h2>1. システム概要</h2>
+<p>本システムは、家計の記録、分析、予算管理、AI 支援を 1 つの Web アプリで提供する Next.js ベースの家計簿です。 フロントエンドと API を同一リポジトリの App Router で管理し、データは Supabase、認証は Auth0、配信は Vercel を利用します。</p>
+<h2>2. 全体構成</h2>
+<pre><code class="language-text">Browser
+  ├─ App Router UI
+  ├─ Dashboard / Input / Settings / Contact
+  └─ Fetch to /api/*
+
+Next.js App Router
+  ├─ src/app/*                画面
+  ├─ src/app/api/*            API Route Handlers
+  ├─ src/lib/components/*     UI コンポーネント
+  ├─ src/lib/auth/*           認証連携
+  ├─ src/lib/server/*         セキュリティ / サーバーユーティリティ
+  └─ src/lib/supabase/*       DB アクセス
+
+External Services
+  ├─ Supabase                 profiles / transactions / budgets
+  ├─ Auth0                    Google / LINE / メール認証
+  ├─ OpenAI / Gemini 等       AI 機能
+  ├─ Google Maps API          AI 店案内 / 地図 / Geocoding
+  ├─ Resend                   メール送信
+  └─ Vercel                   Hosting / Build / Deploy</code></pre>
+<h2>3. レイヤ設計</h2>
+<h3>3.1 Presentation Layer</h3>
+<ul>
+<li><code>src/app/</code></li>
+<li><code>src/lib/components/</code></li>
+</ul>
+<p>役割:</p>
+<ul>
+<li>家計入力画面、ダッシュボード、設定、法務ページ、問い合わせページを表示</li>
+<li>API 呼び出し結果を反映</li>
+<li>一部 UI 状態をローカルストレージに保持</li>
+</ul>
+<h3>3.2 Application Layer</h3>
+<ul>
+<li><code>src/app/api/</code></li>
+</ul>
+<p>役割:</p>
+<ul>
+<li>認証済みユーザーのリクエストを受けて入力検証を実行</li>
+<li>same-origin、rate limit、認可を通した上で業務処理を実行</li>
+<li>外部 API と DB の橋渡しを行う</li>
+</ul>
+<h3>3.3 Domain / Utility Layer</h3>
+<ul>
+<li><code>src/lib/utils.ts</code></li>
+<li><code>src/lib/fixed-cost-flags.ts</code></li>
+<li><code>src/lib/components/*</code> 内の計算ロジック</li>
+</ul>
+<p>役割:</p>
+<ul>
+<li>家計サマリー、予算差分、固定費判定、生活支援ロジックの計算</li>
+</ul>
+<h3>3.4 Infrastructure Layer</h3>
+<ul>
+<li><code>src/lib/supabase/admin.ts</code></li>
+<li><code>src/lib/auth0.ts</code></li>
+<li><code>src/lib/server/security.ts</code></li>
+<li><code>src/lib/server/ssrf.ts</code></li>
+</ul>
+<p>役割:</p>
+<ul>
+<li>Supabase 管理クライアント</li>
+<li>Auth0 セッション処理</li>
+<li>JSON 読み取り制限、same-origin、rate limit</li>
+<li>SSRF 対策</li>
+</ul>
+<h2>4. データ設計</h2>
+<p>主要テーブル:</p>
+<ul>
+<li><code>profiles</code></li>
+<li><code>transactions</code></li>
+<li><code>budgets</code></li>
+</ul>
+<p>補助データ:</p>
+<ul>
+<li>予算差額</li>
+<li>予算トレードオフ</li>
+<li>引き落とし予約</li>
+</ul>
+<p>基本方針:</p>
+<ul>
+<li>ユーザー単位でデータを分離</li>
+<li>Supabase の RLS を前提にする</li>
+<li>サーバー側では Auth0 セッションから解決した <code>supabaseUserId</code> を利用して書き込み対象を固定する</li>
+</ul>
+<h2>5. 認証設計</h2>
+<p>認証方式:</p>
+<ul>
+<li>Auth0 セッション認証</li>
+<li>Google OAuth</li>
+<li>LINE Login</li>
+<li>メール系ログイン / 確認フロー</li>
+</ul>
+<p>設計ポイント:</p>
+<ul>
+<li>画面系は Auth0 セッション前提</li>
+<li>API はセッション確認と same-origin を併用</li>
+<li>webhook 系 API は same-origin ではなく署名検証で保護</li>
+</ul>
+<h2>6. セキュリティ設計</h2>
+<p>実装済みの主要制御:</p>
+<ul>
+<li><code>requireSameOrigin</code> による CSRF 軽減</li>
+<li><code>rateLimit</code> による濫用抑制</li>
+<li><code>readJsonBody</code> によるサイズ制限つき JSON 読み取り</li>
+<li><code>boundedText</code> による入力長制限</li>
+<li>webhook の JWT / 署名検証</li>
+<li>SSRF 対策ユーティリティ</li>
+</ul>
+<p>今回の補強:</p>
+<ul>
+<li><code>src/app/api/profile/route.ts</code> に same-origin と rate limit を追加</li>
+</ul>
+<h2>7. AI 店案内設計</h2>
+<p>対象:</p>
+<ul>
+<li><code>src/lib/components/NearbyShopGuide.tsx</code></li>
+<li><code>src/app/api/nearby-shops/route.ts</code></li>
+</ul>
+<p>処理フロー:</p>
+<ol>
+<li>画面で店種、エリア、自由入力キーワードを指定</li>
+<li>現在地またはエリア名を API に送信</li>
+<li>API で Google Geocoding または Places API を呼び出す</li>
+<li>距離順に最大 6 件へ整形</li>
+<li>UI で一覧と静的地図を表示</li>
+</ol>
+<p>設計意図:</p>
+<ul>
+<li>クライアントは UI とパラメータ入力に集中</li>
+<li>外部 API 呼び出しはサーバー側 API Route に集約</li>
+<li>エラー時はユーザーが原因を理解しやすい文言を返す</li>
+</ul>
+<h2>8. デプロイ設計</h2>
+<p>環境:</p>
+<ul>
+<li>ローカル開発</li>
+<li>Vercel Preview</li>
+<li>Vercel Production</li>
+</ul>
+<p>デプロイ方針:</p>
+<ul>
+<li>Git push ベースで Vercel に反映</li>
+<li>本番環境変数は Vercel 管理</li>
+<li><code>.env.local</code> はローカル専用</li>
+</ul>
+<h2>9. 非機能要件</h2>
+<ul>
+<li>TypeScript による型安全</li>
+<li>ESLint による静的検証</li>
+<li>Next.js build 通過をリリース基準にする</li>
+<li>セキュリティ境界を API 側で強制する</li>
+</ul>
+<h2>10. 今後の改善候補</h2>
+<ul>
+<li>API ごとの rate limit 方針を明文化</li>
+<li>監査ログの追加</li>
+<li>README と docs の多言語整理</li>
+<li>AI 店案内の監視指標追加</li>
+</ul>
+  </main>
+</body>
+</html>

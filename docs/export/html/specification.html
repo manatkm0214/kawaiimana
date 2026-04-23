@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>仕様書</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 16mm;
+    }
+
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #52607a;
+      --line: #d6dde8;
+      --paper: #ffffff;
+      --accent: #0f766e;
+      --accent-soft: #ecfeff;
+      --code: #0f172a;
+      --code-bg: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 36%),
+        linear-gradient(180deg, #f8fafc, #eef6ff 24%, #ffffff 100%);
+    }
+
+    main {
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 22mm 18mm;
+      background: var(--paper);
+    }
+
+    header {
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 18px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: #0f172a;
+      line-height: 1.3;
+      page-break-after: avoid;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    h2 {
+      margin-top: 28px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+
+    h3 {
+      margin-top: 24px;
+      font-size: 18px;
+    }
+
+    p, li {
+      font-size: 14px;
+      line-height: 1.85;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    ul, ol {
+      margin: 10px 0 10px 22px;
+      padding: 0;
+    }
+
+    li + li {
+      margin-top: 4px;
+    }
+
+    code {
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 0.92em;
+      background: var(--code-bg);
+      color: var(--code);
+      padding: 0.15em 0.35em;
+      border-radius: 6px;
+    }
+
+    pre {
+      overflow: hidden;
+      margin: 16px 0;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--code-bg);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    a {
+      color: #0f766e;
+      text-decoration: none;
+    }
+
+    .meta {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Kakeibo App</p>
+      <h1>仕様書</h1>
+      <p class="meta">生成元: docs/specification.md | 生成日時: 2026/04/24 2:55</p>
+    </header>
+    <h1>仕様書</h1>
+<h2>1. 目的</h2>
+<p>家計の入力から分析、予算調整、生活支援までを一元化し、日々の意思決定を支援する。</p>
+<h2>2. 想定利用者</h2>
+<ul>
+<li>個人の家計を管理したいユーザー</li>
+<li>生活費、固定費、貯蓄、投資のバランスを見たいユーザー</li>
+<li>AI に相談しながら家計改善を進めたいユーザー</li>
+</ul>
+<h2>3. 提供機能</h2>
+<h3>3.1 家計入力</h3>
+<ul>
+<li>収入 / 支出 / 貯蓄 / 投資の登録</li>
+<li>カテゴリ、日付、固定費フラグ、メモ入力</li>
+<li>最近の入力履歴の参照</li>
+</ul>
+<h3>3.2 ダッシュボード</h3>
+<ul>
+<li>当月収支</li>
+<li>カテゴリ別集計</li>
+<li>予算消化率</li>
+<li>安全度 / 生活レベル</li>
+<li>固定費見直し候補</li>
+</ul>
+<h3>3.3 予算管理</h3>
+<ul>
+<li>配分プリセット適用</li>
+<li>予算超過 / 余剰の確認</li>
+<li>トレードオフ提案</li>
+<li>引き落とし予約の記録</li>
+</ul>
+<h3>3.4 AI 機能</h3>
+<ul>
+<li>AI 分析</li>
+<li>AI 節約アドバイス</li>
+<li>AI チャット相談</li>
+<li>AI 生活支援</li>
+<li>AI 店案内</li>
+</ul>
+<h3>3.5 認証</h3>
+<ul>
+<li>Google ログイン</li>
+<li>LINE ログイン</li>
+<li>メール系認証</li>
+<li>ログアウト</li>
+</ul>
+<h3>3.6 その他</h3>
+<ul>
+<li>問い合わせ送信</li>
+<li>設定変更</li>
+<li>法務ページ表示</li>
+<li>PDF 出力</li>
+</ul>
+<h2>4. 画面仕様</h2>
+<h3>4.1 ホーム</h3>
+<ul>
+<li>ログイン前導線</li>
+<li>ニックネーム / 初期導線</li>
+<li>認証開始</li>
+</ul>
+<h3>4.2 ダッシュボード</h3>
+<ul>
+<li>入力、ボード、カレンダー、目標、AI、年次、基準、シニア、こどもを切替</li>
+</ul>
+<h3>4.3 設定</h3>
+<ul>
+<li>デザイン設定</li>
+<li>アカウント設定</li>
+</ul>
+<h3>4.4 問い合わせ</h3>
+<ul>
+<li>名前、メール、件名、本文を送信</li>
+</ul>
+<h2>5. API 仕様</h2>
+<p>代表 API:</p>
+<ul>
+<li><code>/api/transactions</code></li>
+<li><code>/api/profile</code></li>
+<li><code>/api/preset</code></li>
+<li><code>/api/budget-surplus</code></li>
+<li><code>/api/budget-tradeoff</code></li>
+<li><code>/api/debit-reservations</code></li>
+<li><code>/api/ai</code></li>
+<li><code>/api/ai/chat</code></li>
+<li><code>/api/nearby-shops</code></li>
+<li><code>/api/contact</code></li>
+</ul>
+<p>共通仕様:</p>
+<ul>
+<li>JSON リクエスト</li>
+<li>認証必須 API は Auth0 セッションを確認</li>
+<li>更新系 API は same-origin を要求</li>
+<li>一部 API は rate limit 付き</li>
+</ul>
+<h2>6. AI 店案内仕様</h2>
+<p>入力:</p>
+<ul>
+<li>現在地またはエリア文字列</li>
+<li>店種</li>
+<li>自由入力キーワード</li>
+<li>半径</li>
+</ul>
+<p>出力:</p>
+<ul>
+<li>店舗名</li>
+<li>住所</li>
+<li>距離</li>
+<li>緯度経度</li>
+<li>地図遷移リンク</li>
+</ul>
+<p>検索仕様:</p>
+<ul>
+<li>エリア入力時は Geocoding を先に実行</li>
+<li>店舗検索は Google Places API を利用</li>
+<li>近い順に 6 件まで返却</li>
+</ul>
+<p>エラー仕様:</p>
+<ul>
+<li>API キー未設定時は <code>503</code></li>
+<li>エリア不明時は <code>404</code></li>
+<li>外部 API 制限時は <code>502</code></li>
+<li>不正入力時は <code>400</code></li>
+</ul>
+<h2>7. セキュリティ仕様</h2>
+<ul>
+<li>認証済みユーザーのみ個人データを更新可能</li>
+<li>same-origin 対象 API は cross-site 送信を拒否</li>
+<li>rate limit 対象 API は短時間の多重送信を制限</li>
+<li>外部向け webhook は署名検証を必須化</li>
+</ul>
+<h2>8. 品質基準</h2>
+<p>リリース前に満たす基準:</p>
+<ul>
+<li><code>eslint</code> エラー 0</li>
+<li>TypeScript エラー 0</li>
+<li><code>next build</code> 成功</li>
+<li>重大なハードコード秘密情報 0</li>
+</ul>
+<h2>9. 運用ルール</h2>
+<ul>
+<li>実シークレットは Git に含めない</li>
+<li><code>.env.local</code> と Vercel 環境変数を分離する</li>
+<li>DB migration は明示的に適用する</li>
+</ul>
+  </main>
+</body>
+</html>

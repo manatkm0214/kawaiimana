@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { Resend } from "resend"
 import { boundedText, escapeHtml, isValidEmail, rateLimit, readJsonBody, requireSameOrigin } from "@/lib/server/security"
+import { sendEmailViaResend } from "@/lib/server/resend"
 
 type ContactPayload = {
   name?: string
@@ -104,29 +104,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "お問い合わせ送信の設定が未完了です。" }, { status: 500 })
     }
 
-    const resend = new Resend(resendApiKey)
     const adminSubject = lang === "en" ? `[Inquiry] ${subject}` : `【お問い合わせ】${subject}`
     const replySubject = lang === "en" ? `Re: ${subject}` : `【受付完了】${subject}`
 
-    const adminResult = await resend.emails.send({
+    const adminResult = await sendEmailViaResend({
+      apiKey: resendApiKey,
       from: fromEmail,
       to: toEmail,
-      replyTo: email,
       subject: adminSubject,
       html: buildAdminEmail({ name, email, subject, message, lang }),
+      replyTo: email,
     })
 
-    if (adminResult.error) {
+    if (!adminResult.ok) {
+      console.error("[contact] Failed to send admin email:", adminResult.error)
       return NextResponse.json({ error: "お問い合わせの送信に失敗しました。" }, { status: 500 })
     }
 
     // 自動返信は失敗してもエラーにしない（送信元ドメインの制限がある場合があるため）
-    await resend.emails.send({
+    const replyResult = await sendEmailViaResend({
+      apiKey: resendApiKey,
       from: fromEmail,
       to: email,
       subject: replySubject,
       html: buildReplyEmail({ name, email, subject, message, lang }),
-    }).catch(() => null)
+    })
+
+    if (!replyResult.ok) {
+      console.warn("[contact] Failed to send reply email:", replyResult.error)
+    }
 
     return NextResponse.json({ ok: true })
   } catch {

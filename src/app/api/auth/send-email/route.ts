@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { Resend } from "resend"
 import { escapeHtml, readJsonBody } from "@/lib/server/security"
+import { sendEmailViaResend } from "@/lib/server/resend"
 
 // Supabase send-email Auth Hook handler
 // Configure in Supabase Dashboard → Authentication → Hooks → Send Email
@@ -287,8 +287,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid app origin" }, { status: 400 })
   }
 
-  const resend = new Resend(resendApiKey)
-
   let subject: string
   let html: string
 
@@ -316,15 +314,16 @@ export async function POST(req: NextRequest) {
     ;({ subject, html } = buildOtpEmail(userEmail, token))
   }
 
-  const { error } = await resend.emails.send({
+  const result = await sendEmailViaResend({
+    apiKey: resendApiKey,
     from: fromEmail,
     to: userEmail,
     subject,
     html,
   })
 
-  if (error) {
-    console.error("[send-email hook] Resend error:", error)
+  if (!result.ok) {
+    console.error("[send-email hook] Resend error:", result.error)
     return NextResponse.json({ error: "Failed to send email" }, { status: 500 })
   }
 
