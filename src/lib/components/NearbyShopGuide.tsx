@@ -151,8 +151,12 @@ export default function NearbyShopGuide({
     const endpoints = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
     for (const ep of endpoints) {
       try {
-        const res = await fetch(ep, { method: "POST", body: query });
-        if (!res.ok) continue;
+        const res = await fetch(ep, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `data=${encodeURIComponent(query)}`,
+        });
+        if (!res.ok) { console.warn("[overpass] failed:", ep, res.status); continue; }
         const data = (await res.json()) as { elements?: Array<{ id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }> };
         return (data.elements ?? [])
           .filter(e => e.tags?.name)
