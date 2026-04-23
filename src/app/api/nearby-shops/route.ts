@@ -86,7 +86,11 @@ async function searchNearby(lat: number, lon: number, radius: number, kind: Plac
     }),
     cache: "no-store",
   });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error("[nearby-shops] searchNearby failed:", res.status, body);
+    return [];
+  }
   const data = (await res.json()) as { places?: PlaceResult[] };
   return data.places ?? [];
 }
@@ -109,7 +113,11 @@ async function searchByText(query: string, lat: number, lon: number, radius: num
     }),
     cache: "no-store",
   });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error("[nearby-shops] searchByText failed:", res.status, body);
+    return [];
+  }
   const data = (await res.json()) as { places?: PlaceResult[] };
   return data.places ?? [];
 }
@@ -187,7 +195,8 @@ export async function POST(req: NextRequest) {
       .slice(0, 6);
 
     return NextResponse.json({ items, source: sourceLabel || null });
-  } catch {
+  } catch (e) {
+    console.error("[nearby-shops] unexpected error:", e);
     return NextResponse.json({ error: "failed to fetch nearby shops" }, { status: 500 });
   }
 }
