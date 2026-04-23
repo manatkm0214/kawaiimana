@@ -499,19 +499,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "lat/lon or area required" }, { status: 400 });
     }
 
-    const radius = Number.isFinite(body.radius) ? Math.min(Math.max(Number(body.radius), 300), 5000) : 1600;
-    const allowedKinds: PlaceKind[] = [
-      "budget", "grocery", "clothes", "daily", "home", "drugstore",
-      "electronics", "cafe", "restaurant", "beauty", "bookstore", "sports", "baby",
-    ];
-    const kind = allowedKinds.includes(body.kind as PlaceKind) ? (body.kind as PlaceKind) : "budget";
-
-    const osmResult = await searchWithOsm(lat, lon, radius, kind, customQuery || undefined);
-    if ("apiError" in osmResult) {
-      return NextResponse.json({ error: "周辺のお店情報を取得できませんでした。時間をおいて再試行してください。" }, { status: 502 });
-    }
-
-    return NextResponse.json({ items: osmResult, source: sourceLabel || null, provider: "osm" as SearchProvider });
+    // ジオコーディングのみサーバーで行い、Overpass検索はブラウザ側で実行
+    return NextResponse.json({ lat, lon, source: sourceLabel || null });
   } catch (e) {
     console.error("[nearby-shops] unexpected error:", e);
     return NextResponse.json({ error: "failed to fetch nearby shops" }, { status: 500 });

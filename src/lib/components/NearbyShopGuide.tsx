@@ -109,64 +109,110 @@ export default function NearbyShopGuide({
     );
   })();
 
+  const kindToOsmTags: Record<ShopKind, Array<[string, string]>> = {
+    budget:      [["shop", "supermarket"], ["shop", "convenience"]],
+    grocery:     [["shop", "supermarket"], ["shop", "greengrocer"]],
+    clothes:     [["shop", "clothes"]],
+    daily:       [["shop", "convenience"], ["shop", "variety_store"]],
+    home:        [["shop", "houseware"], ["shop", "furniture"], ["shop", "doityourself"]],
+    drugstore:   [["shop", "chemist"], ["amenity", "pharmacy"]],
+    electronics: [["shop", "electronics"]],
+    cafe:        [["amenity", "cafe"]],
+    restaurant:  [["amenity", "restaurant"], ["amenity", "fast_food"]],
+    beauty:      [["shop", "hairdresser"], ["shop", "beauty"]],
+    bookstore:   [["shop", "books"]],
+    sports:      [["shop", "sports"]],
+    baby:        [["shop", "toys"], ["shop", "baby_goods"]],
+  };
+
+  function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const rad = (v: number) => (v * Math.PI) / 180;
+    const dLat = rad(lat2 - lat1), dLon = rad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2;
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  async function searchOverpass(lat: number, lon: number, radius: number, cKind: ShopKind, cQuery: string): Promise<ShopItem[]> {
+    const r = Math.min(radius, 2000);
+    let selectors: string[];
+    if (cQuery.trim()) {
+      const esc = cQuery.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      selectors = [
+        `node(around:${r},${lat},${lon})["name"~"${esc}",i]`,
+        `way(around:${r},${lat},${lon})["name"~"${esc}",i]`,
+      ];
+    } else {
+      selectors = kindToOsmTags[cKind].flatMap(([k, v]) => [
+        `node(around:${r},${lat},${lon})["${k}"="${v}"]`,
+        `way(around:${r},${lat},${lon})["${k}"="${v}"]`,
+      ]);
+    }
+    const query = `[out:json][timeout:20];(${selectors.join(";")};);out center tags 8;`;
+    const endpoints = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, { method: "POST", body: query });
+        if (!res.ok) continue;
+        const data = (await res.json()) as { elements?: Array<{ id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }> };
+        return (data.elements ?? [])
+          .filter(e => e.tags?.name)
+          .map(e => ({
+            id: String(e.id),
+            name: e.tags!.name!,
+            kind: e.tags?.shop ?? e.tags?.amenity ?? cKind,
+            distanceKm: distanceKm(lat, lon, e.lat ?? e.center!.lat, e.lon ?? e.center!.lon),
+            lat: e.lat ?? e.center!.lat,
+            lng: e.lon ?? e.center!.lon,
+            address: [e.tags?.["addr:city"], e.tags?.["addr:street"]].filter(Boolean).join(" "),
+            placeId: "",
+          }))
+          .sort((a, b) => a.distanceKm - b.distanceKm)
+          .slice(0, 6);
+      } catch { continue; }
+    }
+    throw new Error(t("周辺のお店情報を取得できませんでした。時間をおいて再試行してください。", "Could not fetch nearby shops. Please try again later."));
+  }
+
   async function loadShops(payload: { lat?: number; lon?: number; area?: string }, source: "area" | "current") {
     setLoading(true);
     setStatus("");
     setLastSource(source);
 
     try {
-      const response = await fetch("/api/nearby-shops", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...payload,
-          kind,
-          customQuery: customQuery.trim() || undefined,
-          radius: kind === "clothes" || kind === "home" || kind === "electronics" ? 2500 : 1800,
-        }),
-      });
+      const radius = kind === "clothes" || kind === "home" || kind === "electronics" ? 2500 : 1800;
+      let lat = payload.lat ?? NaN;
+      let lon = payload.lon ?? NaN;
+      let sourceLabel = "";
 
-      const data = (await response.json()) as {
-        items?: ShopItem[];
-        source?: string | null;
-        provider?: SearchProvider;
-        error?: string;
-      };
-      if (!response.ok) {
-        setProvider(null);
-        const reason = data.error ? ` (${data.error})` : ` (${response.status})`;
-        throw new Error(
-          source === "area"
-            ? t(`このエリアからお店を探せませんでした。${reason}`, `Could not find places from that area.${reason}`)
-            : t(`近くのお店を取得できませんでした。${reason}`, `Could not fetch nearby places.${reason}`),
-        );
+      if (payload.area) {
+        const response = await fetch("/api/nearby-shops", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ area: payload.area }),
+        });
+        const data = (await response.json()) as { lat?: number; lon?: number; source?: string | null; error?: string };
+        if (!response.ok) {
+          throw new Error(data.error ?? t("エリアが見つかりませんでした。", "Area not found."));
+        }
+        lat = data.lat ?? NaN;
+        lon = data.lon ?? NaN;
+        sourceLabel = data.source ?? payload.area;
       }
 
-      const nextItems = data.items ?? [];
+      const nextItems = await searchOverpass(lat, lon, radius, kind, customQuery.trim());
       setShops(nextItems);
-      setProvider(data.provider ?? null);
-
-      const providerNote = data.provider === "osm"
-        ? t("Google Maps が使えないため、代替データで表示しています。", "Showing fallback data because Google Maps is unavailable.")
-        : "";
 
       if (nextItems.length === 0) {
-        setStatus(
-          source === "area"
-            ? t("このエリアでは候補が見つかりませんでした。別の地名や自由入力も試してみてください。", "No results were found for that area. Try another area or a custom keyword.")
-            : t("現在地の近くでは候補が見つかりませんでした。自由入力も一緒に試してみてください。", "No nearby results were found. Try adding a custom keyword too."),
-        );
+        setStatus(source === "area"
+          ? t("このエリアでは候補が見つかりませんでした。別の地名や自由入力も試してみてください。", "No results found. Try another area or keyword.")
+          : t("現在地の近くでは候補が見つかりませんでした。", "No nearby results found."));
         return;
       }
-
-      setStatus(
-        source === "area"
-          ? `${t(`「${data.source || area}」周辺のお店を表示しています。`, `Showing places around ${data.source || area}.`)}${providerNote ? ` ${providerNote}` : ""}`
-          : `${t("現在地の近くのお店を表示しています。", "Showing places near your current location.")}${providerNote ? ` ${providerNote}` : ""}`,
-      );
+      setStatus(source === "area"
+        ? t(`「${sourceLabel}」周辺のお店を表示しています。`, `Showing places around ${sourceLabel}.`)
+        : t("現在地の近くのお店を表示しています。", "Showing places near your current location."));
     } catch (error) {
       setShops([]);
-      setProvider(null);
       setStatus(error instanceof Error ? error.message : t("お店を取得できませんでした。", "Could not fetch places."));
     } finally {
       setLoading(false);
