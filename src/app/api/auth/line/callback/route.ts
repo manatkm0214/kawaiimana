@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(homeUrl.toString())
   }
 
-  if (state && !verifyState(state, clientSecret)) {
+  if (!state || !verifyState(state, clientSecret)) {
     homeUrl.searchParams.set("auth_error", "不正なリクエストです（stateエラー）")
     return NextResponse.redirect(homeUrl.toString())
   }
