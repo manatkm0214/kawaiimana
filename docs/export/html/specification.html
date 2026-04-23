@@ -142,7 +142,7 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>仕様書</h1>
-      <p class="meta">生成元: docs/specification.md | 生成日時: 2026/04/24 3:11</p>
+      <p class="meta">生成元: docs/specification.md | 生成日時: 2026/04/24 4:33</p>
     </header>
     <h1>仕様書</h1>
 <h2>1. 目的</h2>
@@ -256,15 +256,16 @@
 </ul>
 <p>検索仕様:</p>
 <ul>
-<li>エリア入力時は Geocoding を先に実行</li>
-<li>店舗検索は Google Places API を利用</li>
+<li>エリア入力時はサーバーで Nominatim（OpenStreetMap）を使いジオコーディングを実行</li>
+<li>店舗検索はブラウザから Overpass API（OpenStreetMap）を直接呼び出す</li>
 <li>近い順に 6 件まで返却</li>
+<li>検索結果は 5 分間クライアントキャッシュ</li>
+<li>Overpass API 障害時は自動で予備サーバーへ切り替え</li>
 </ul>
 <p>エラー仕様:</p>
 <ul>
-<li>API キー未設定時は <code>503</code></li>
 <li>エリア不明時は <code>404</code></li>
-<li>外部 API 制限時は <code>502</code></li>
+<li>ジオコーディング失敗時は <code>502</code></li>
 <li>不正入力時は <code>400</code></li>
 </ul>
 <h2>7. セキュリティ仕様</h2>

@@ -25,7 +25,8 @@ External Services
   ├─ Supabase                 profiles / transactions / budgets
   ├─ Auth0                    Google / LINE / メール認証
   ├─ OpenAI / Gemini 等       AI 機能
-  ├─ Google Maps API          AI 店案内 / 地図 / Geocoding
+  ├─ Nominatim (OSM)          エリアジオコーディング（サーバー）
+  ├─ Overpass API (OSM)       周辺店舗検索（ブラウザ直接呼び出し）
   ├─ Resend                   メール送信
   └─ Vercel                   Hosting / Build / Deploy
 ```
@@ -137,15 +138,18 @@ External Services
 処理フロー:
 
 1. 画面で店種、エリア、自由入力キーワードを指定
-2. 現在地またはエリア名を API に送信
-3. API で Google Geocoding または Places API を呼び出す
-4. 距離順に最大 6 件へ整形
-5. UI で一覧と静的地図を表示
+2. エリア入力時: サーバー API に送信 → Nominatim でジオコーディング → 座標を返却
+3. 現在地使用時: ブラウザの Geolocation API で座標を取得
+4. ブラウザから Overpass API を直接呼び出し周辺店舗を検索
+5. 距離順に最大 6 件へ整形し表示
+6. 同一条件の結果は 5 分間クライアントキャッシュ
 
 設計意図:
 
-- クライアントは UI とパラメータ入力に集中
-- 外部 API 呼び出しはサーバー側 API Route に集約
+- サーバーは認証・レート制限・ジオコーディングのみ担当
+- Overpass 検索をブラウザ側で実行することでサーバーのタイムアウト制限を回避
+- 外部 API（Nominatim / Overpass）は無料・APIキー不要の OSM サービスを利用
+- Overpass 障害時は予備サーバーへ自動切り替え
 - エラー時はユーザーが原因を理解しやすい文言を返す
 
 ## 8. デプロイ設計
