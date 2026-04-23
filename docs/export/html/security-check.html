@@ -142,7 +142,7 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>セキュリティチェック報告書</h1>
-      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/24 2:55</p>
+      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/24 3:11</p>
     </header>
     <h1>セキュリティチェック報告書</h1>
 <h2>1. 実施概要</h2>
@@ -153,6 +153,7 @@
 </ul>
 <h2>2. 数値サマリー</h2>
 <ul>
+<li>セキュリティ総合評価: <code>93%</code></li>
 <li><code>npm audit</code> 脆弱性件数: <code>0</code></li>
 <li>Critical: <code>0</code></li>
 <li>High: <code>0</code></li>
@@ -167,7 +168,30 @@
 <li>ビルド失敗件数: <code>0</code></li>
 <li>非ブロッキング build warning 件数: <code>2</code></li>
 </ul>
-<h2>3. 実施コマンド</h2>
+<h2>3. 総合評価の算出方法</h2>
+<ul>
+<li>今回の総合評価は、静的検査とビルド検証の結果を 100 点満点で重み付けして算出</li>
+<li>依存脆弱性: <code>30 / 30</code></li>
+<li>シークレット管理: <code>25 / 25</code></li>
+<li>リクエスト起点保護: <code>18.8 / 20</code></li>
+<li>レート制限: <code>4.1 / 10</code></li>
+<li>品質ゲート: <code>15 / 15</code></li>
+<li>合計: <code>92.9 / 100</code> → 四捨五入して <code>93%</code></li>
+</ul>
+<h3>3.1 配点の考え方</h3>
+<ul>
+<li>依存脆弱性は <code>npm audit</code> の結果をそのまま反映し、<code>0 件</code> のため満点</li>
+<li>シークレット管理は Git 管理下のハードコード秘密情報 <code>0 件</code> を満点評価</li>
+<li>リクエスト起点保護は <code>same-origin</code> を基本指標とし、<code>16 / 17</code> のため <code>94.1%</code> を 20 点へ按分</li>
+<li>レート制限は <code>7 / 17</code> の適用率 <code>41.2%</code> を 10 点へ按分</li>
+<li>品質ゲートは ESLint、TypeScript、<code>next build</code> が通過しているため満点</li>
+</ul>
+<h3>3.2 解釈</h3>
+<ul>
+<li><code>93%</code> は「現時点の静的・構成・ビルド観点では高水準だが、追加改善余地あり」という評価</li>
+<li>主な改善余地は <code>rateLimit</code> の適用拡大と、外部からの動的ペネトレーションテスト未実施の 2 点</li>
+</ul>
+<h2>4. 実施コマンド</h2>
 <ul>
 <li><code>npm audit --json</code></li>
 <li><code>./node_modules/.bin/eslint.cmd .</code></li>
@@ -182,7 +206,7 @@ SAME_ORIGIN=16
 RATE_LIMITED=7
 MISSING_SAME_ORIGIN:
 src/app/api/auth/send-email/route.ts</code></pre>
-<h2>4. 結果詳細</h2>
+<h2>5. 結果詳細</h2>
 <h3>4.1 依存パッケージ監査</h3>
 <ul>
 <li><code>resend</code> SDK 依存を外し、Resend REST API への直接送信に切り替えた後で <code>npm audit</code> を再実行</li>
@@ -209,17 +233,18 @@ src/app/api/auth/send-email/route.ts</code></pre>
 <li><code>next build</code>: 成功</li>
 <li>ビルド警告は Auth0 依存からの warning が <code>2</code> 件あるが、出荷ブロッカーではない</li>
 </ul>
-<h2>5. 残課題と所見</h2>
+<h2>6. 残課題と所見</h2>
 <ul>
 <li><code>rateLimit</code> は全 <code>POST</code> API に一律ではないため、将来的には対象拡大の余地あり</li>
 <li>Auth0 の <code>dpopUtils.js</code> に起因する build warning は依存側の挙動で、現状は機能阻害なし</li>
 <li>今回は静的検査とビルド検証が中心であり、外部からの動的ペネトレーションテストまでは未実施</li>
 </ul>
-<h2>6. 総合判定</h2>
+<h2>7. 総合判定</h2>
 <ul>
 <li>今回の実施範囲では、リポジトリ内の依存脆弱性は <code>0 件</code></li>
 <li>重大な秘密情報の Git 混入も検出されず</li>
 <li>ビルド、型検査、Lint を通過しており、現時点のコードベースはデプロイ可能な状態</li>
+<li>総合評価は <code>93%</code> で、本番運用に耐える状態だが、今後は rate limit の拡張でさらに引き上げ可能</li>
 </ul>
   </main>
 </body>
