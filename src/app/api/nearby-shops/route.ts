@@ -68,7 +68,7 @@ async function geocodeArea(area: string, apiKey: string) {
   return { lat: top.geometry.location.lat, lon: top.geometry.location.lng, label: top.formatted_address };
 }
 
-async function searchNearby(lat: number, lon: number, radius: number, kind: PlaceKind, apiKey: string): Promise<PlaceResult[]> {
+async function searchNearby(lat: number, lon: number, radius: number, kind: PlaceKind, apiKey: string): Promise<PlaceResult[] | { apiError: number }> {
   const res = await fetch(PLACES_NEARBY_URL, {
     method: "POST",
     headers: {
@@ -89,13 +89,13 @@ async function searchNearby(lat: number, lon: number, radius: number, kind: Plac
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     console.error("[nearby-shops] searchNearby failed:", res.status, body);
-    return [];
+    return { apiError: res.status };
   }
   const data = (await res.json()) as { places?: PlaceResult[] };
   return data.places ?? [];
 }
 
-async function searchByText(query: string, lat: number, lon: number, radius: number, apiKey: string): Promise<PlaceResult[]> {
+async function searchByText(query: string, lat: number, lon: number, radius: number, apiKey: string): Promise<PlaceResult[] | { apiError: number }> {
   const res = await fetch(PLACES_TEXT_URL, {
     method: "POST",
     headers: {
@@ -116,7 +116,7 @@ async function searchByText(query: string, lat: number, lon: number, radius: num
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     console.error("[nearby-shops] searchByText failed:", res.status, body);
-    return [];
+    return { apiError: res.status };
   }
   const data = (await res.json()) as { places?: PlaceResult[] };
   return data.places ?? [];
@@ -176,10 +176,18 @@ export async function POST(req: NextRequest) {
     ];
     const kind = allowedKinds.includes(body.kind as PlaceKind) ? (body.kind as PlaceKind) : "budget";
 
-    const places = customQuery
+    const result = customQuery
       ? await searchByText(customQuery, lat, lon, radius, apiKey)
       : await searchNearby(lat, lon, radius, kind, apiKey);
 
+    if ("apiError" in result) {
+      const msg = result.apiError === 403
+        ? "Google Maps APIキーが制限されています。Google Cloud ConsoleでAPIキーの制限を確認してください。"
+        : `Google Maps APIエラー (${result.apiError})`;
+      return NextResponse.json({ error: msg }, { status: 502 });
+    }
+
+    const places = result;
     const items = places
       .map((p) => ({
         id: p.id,
