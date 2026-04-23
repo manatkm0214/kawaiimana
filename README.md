@@ -40,7 +40,7 @@
 | PDF | jsPDF | 4.x |
 | メール | Resend | 6.x |
 | 国際化 | next-intl | 4.9.x |
-| デプロイ | Cloud Run / Vercel | — |
+| デプロイ | Vercel | — |
 
 ---
 
@@ -198,33 +198,25 @@ Supabase Dashboard の **SQL Editor** で以下のファイルを順番に実行
 
 ---
 
-## デプロイ
+## デプロイ（Vercel）
 
-### 本番環境 — Cloud Run（GitHub Actions自動デプロイ）
+本番・デモともに Vercel を使用。`main` へのプッシュで自動デプロイされます。
 
-`main` ブランチへのプッシュで自動デプロイされます（[.github/workflows/deploy.yml](.github/workflows/deploy.yml)）。
+### セットアップ手順
 
-**必要なGitHub Secrets：**
+1. [vercel.com/new](https://vercel.com/new) でリポジトリをインポート
+2. **Framework Preset:** Next.js（自動検出）
+3. **Environment Variables** に下記の変数を設定
+4. デプロイ → 発行された URL を `APP_BASE_URL` に設定して再デプロイ
 
-| Secret名 | 内容 |
-|---|---|
-| `GCP_WORKLOAD_IDENTITY_PROVIDER` | Workload Identity プロバイダーのリソース名 |
-| `GCP_SERVICE_ACCOUNT` | デプロイ用サービスアカウントのメールアドレス |
+### 本番・デモ環境の違い
 
-Cloud Runサービス名: `kakeibo-app`、リージョン: `asia-northeast1`
-
-**Cloud Runにも以下の環境変数を設定してください（上記の環境変数一覧を参照）。**
-
----
-
-### デモ環境 — Vercel（手動 or 別リポジトリ）
-
-```bash
-npm i -g vercel
-vercel --prod
-```
-
-Vercel Dashboard の **Environment Variables** に環境変数を設定します。デモ用アカウント情報（`NEXT_PUBLIC_DEMO_EMAIL` / `NEXT_PUBLIC_DEMO_PASSWORD`）も忘れずに。
+| 設定 | 本番（kawaii0214） | デモ（kawaii0214demo） |
+|---|---|---|
+| Supabase | 本番プロジェクト | デモ用プロジェクト（推奨） |
+| `APP_BASE_URL` | 本番URL | デモURL |
+| `NEXT_PUBLIC_DEMO_EMAIL` | 設定不要 | デモアカウントのメール |
+| `NEXT_PUBLIC_DEMO_PASSWORD` | 設定不要 | デモアカウントのパスワード |
 
 ---
 
