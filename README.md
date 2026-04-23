@@ -1,246 +1,51 @@
-# Balance — かわいい家計簿
+# Kawaii Kakeibo
 
-> AI搭載のスマート家計管理アプリ（Next.js 15 + TypeScript + Supabase + Auth0）
+かわいい家計簿アプリの開発用リポジトリです。  
+Next.js 15 / TypeScript / Supabase / Auth0 / Vercel を中心に構成しています。
 
-**本番URL:** https://kawaii0214.vercel.app
+本番 URL: `https://kawaii0214.vercel.app`
 
----
+## ドキュメント
 
-## 機能一覧
+- [設計書](./docs/design.md)
+- [仕様書](./docs/specification.md)
+- [取り扱い説明書](./docs/user-manual.md)
+- [セキュリティ / デプロイ補足](./SECURITY_DEPLOYMENT.md)
 
-| カテゴリ | 機能 |
-|---|---|
-| **認証** | Google / LINE / メール＋パスワード / マジックリンク / ゲストモード |
-| **収支入力** | 収入・支出・貯金・投資・固定費の記録、カテゴリ・支払方法・メモ |
-| **固定費** | ワンクリックで前月固定費を今月分に一括生成 |
-| **ダッシュボード** | 月別収支サマリー・予算進捗・グラフ・カレンダービュー |
-| **予算管理** | 配分プリセット（手取り→固定費/変動費/貯蓄率を自動計算）、余剰振り分け、トレードオフ |
-| **目標・負債** | 貯蓄目標・緊急資金・ローン残高・世代別ライフゴール |
-| **AI分析** | Claude / Gemini による家計分析・節約プラン・AIチャット相談 |
-| **年間レポート** | PDF出力対応（jsPDF） |
-| **エクスポート** | CSVダウンロード・印刷・SNS共有 |
-| **Kids** | 子ども向けお小遣い帳（収入・支出・貯金目標） |
-| **シニアモード** | 大きな文字・シンプル表示に切替可能 |
-| **カスタマイズ** | UIテーマ・キャラクター画像・背景デザイン |
-| **多言語** | 日本語 / 英語（画面上部でいつでも切替） |
-| **お問い合わせ** | Resend APIによるメール送信フォーム |
+## 主な機能
 
----
+- 家計データの入力、集計、可視化
+- 予算プリセットと予算超過 / トレードオフ支援
+- AI 分析、AI チャット、生活支援
+- AI 店案内 / 周辺店舗検索
+- Google / LINE / メール認証
+- PDF 出力、問い合わせ、設定変更
 
-## 技術スタック
-
-| レイヤー | 技術 | バージョン |
-|---|---|---|
-| フレームワーク | Next.js (App Router) | 15.5.x |
-| 言語 | TypeScript | 5.x |
-| スタイル | Tailwind CSS | v4 |
-| DB | Supabase (PostgreSQL + RLS) | 最新 |
-| 認証 | Auth0 | 4.16.x |
-| AI（主） | Anthropic Claude SDK | 0.82.x |
-| AI（副） | Google Gemini | 0.24.x |
-| グラフ | Recharts | 3.x |
-| PDF | jsPDF | 4.x |
-| メール | Resend | 6.x |
-| 国際化 | next-intl | 4.9.x |
-| デプロイ | Vercel | — |
-
----
-
-## アーキテクチャ
-
-```
-ブラウザ（React / Tailwind）
-    │
-    ▼
-Cloud Run / Vercel（Next.js App Router）
-    ├── /app/page.tsx         ホーム・認証フロー
-    ├── /app/api/*            REST APIエンドポイント群
-    │       ├── home-data     初期データ取得
-    │       ├── transactions  収支CRUD
-    │       ├── ai / ai/chat  AI分析・チャット（Claude / Gemini）
-    │       ├── auth/google   Google OAuth
-    │       └── auth/line     LINE Login
-    └── /middleware.ts        セキュリティヘッダー・SSRF対策
-           │
-           ├── Supabase（PostgreSQL）
-           │       profiles / transactions / budgets
-           │       Row Level Security で自分のデータのみ参照可
-           │
-           ├── Auth0
-           │       Google / LINE OAuth2.0 仲介
-           │
-           └── AI API
-                   Anthropic Claude / Google Gemini（切替可）
-```
-
----
-
-## ディレクトリ構成
-
-```
-src/
-├── app/
-│   ├── page.tsx              ホーム画面（認証・ダッシュボード）
-│   ├── layout.tsx            ルートレイアウト
-│   ├── api/                  API Routes
-│   │   ├── home-data/        初期データ
-│   │   ├── transactions/     収支CRUD
-│   │   ├── profile/          プロフィール
-│   │   ├── preset/           予算プリセット
-│   │   ├── fixed-costs/      固定費一括生成
-│   │   ├── budget-surplus/   予算余剰
-│   │   ├── budget-tradeoff/  予算トレードオフ
-│   │   ├── debit-reservations/ 口座引落予約
-│   │   ├── ai/               AI分析
-│   │   ├── ai/chat/          AIチャット
-│   │   ├── auth/google/      Google認証
-│   │   ├── auth/line/        LINE認証
-│   │   ├── reset-data/       データリセット
-│   │   └── contact/          お問い合わせ
-│   ├── auth/                 Auth0コールバック・ログアウト
-│   ├── dashboard/            ダッシュボードページ
-│   ├── settings/             設定ページ
-│   ├── privacy/              プライバシーポリシー
-│   └── terms/                利用規約
-├── lib/
-│   ├── components/           再利用コンポーネント
-│   ├── hooks/                カスタムHooks
-│   ├── supabase/             Supabaseクライアント
-│   ├── auth/                 Auth0補助ロジック
-│   ├── server/               サーバー専用ロジック（セキュリティ等）
-│   └── ai/                   AIプロバイダー切替
-└── i18n/                     多言語設定
-```
-
----
-
-## ローカル開発
+## 開発環境
 
 ```bash
 npm install
 cp .env.example .env.local
-# .env.local を編集して各値を入力
 npm run dev
-# → http://localhost:3000
 ```
 
-> **LINE Loginについて:** ローカルでLINEログインを試す場合は `ngrok` 等でhttpsトンネルを作成し、`APP_BASE_URL` を書き換えてください。
+ブラウザ: `http://localhost:3000`
 
----
+## 検証コマンド
 
-## 環境変数
-
-`.env.example` をコピーして `.env.local` を作成し、各値を設定してください。
-
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-# Auth0
-AUTH0_DOMAIN=
-AUTH0_CLIENT_ID=
-AUTH0_CLIENT_SECRET=
-AUTH0_SECRET=
-APP_BASE_URL=http://localhost:3000
-
-# AI
-ANTHROPIC_API_KEY=
-GEMINI_API_KEY=
-
-# LINE
-LINE_CHANNEL_ID=
-LINE_CHANNEL_SECRET=
-
-# メール（お問い合わせ・パスワードリセット）
-RESEND_API_KEY=
-
-# デモモード（デモ環境のみ）
-NEXT_PUBLIC_DEMO_EMAIL=
-NEXT_PUBLIC_DEMO_PASSWORD=
-NEXT_PUBLIC_ENABLE_LINE_LOGIN=true
-NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN=true
+```bash
+npm run build
+node ./node_modules/typescript/bin/tsc --noEmit
+./node_modules/.bin/eslint.cmd .
 ```
 
----
+## デプロイ
 
-## Supabaseセットアップ
+Vercel 連携済みプロジェクトです。  
+通常は Git push をトリガーにデプロイします。
 
-Supabase Dashboard の **SQL Editor** で以下のファイルを順番に実行してください：
+## 注意
 
-```
-1. supabase_schema_fixed.sql                      基本スキーマ（profiles / transactions / budgets + RLS）
-2. supabase_auth0_profile_binding_migration.sql   Auth0プロフィール紐付け
-3. supabase_budget_surplus_migration.sql          予算余剰機能
-4. supabase_budget_tradeoff_migration.sql         予算トレードオフ機能
-5. supabase_debit_reservations_migration.sql      口座引落予約機能
-```
-
-> RLS（Row Level Security）が有効になっており、ユーザーは自分のデータのみアクセスできます。
-
----
-
-## 認証設定
-
-### Auth0
-
-- **Allowed Callback URLs:** `https://kawaii0214.vercel.app/auth/callback, http://localhost:3000/auth/callback`
-- **Allowed Logout URLs:** `https://kawaii0214.vercel.app, http://localhost:3000`
-- **Allowed Web Origins:** `https://kawaii0214.vercel.app, http://localhost:3000`
-
-### Google OAuth (Google Cloud Console)
-
-- **承認済みリダイレクトURI:** `https://{AUTH0_DOMAIN}/login/callback`
-
-### LINE Login (LINE Developers)
-
-- **Callback URL:** `https://kawaii0214.vercel.app/api/auth/line/callback`
-- Channel IDとChannel Secretを取得し、環境変数に設定
-
----
-
-## デプロイ（Vercel）
-
-本番・デモともに Vercel を使用。`main` へのプッシュで自動デプロイされます。
-
-### セットアップ手順
-
-1. [vercel.com/new](https://vercel.com/new) でリポジトリをインポート
-2. **Framework Preset:** Next.js（自動検出）
-3. **Environment Variables** に下記の変数を設定
-4. デプロイ → 発行された URL を `APP_BASE_URL` に設定して再デプロイ
-
-### 本番・デモ環境の違い
-
-| 設定 | 本番（kawaii0214） | デモ（kawaii0214demo） |
-|---|---|---|
-| Supabase | 本番プロジェクト | デモ用プロジェクト（推奨） |
-| `APP_BASE_URL` | 本番URL | デモURL |
-| `NEXT_PUBLIC_DEMO_EMAIL` | 設定不要 | デモアカウントのメール |
-| `NEXT_PUBLIC_DEMO_PASSWORD` | 設定不要 | デモアカウントのパスワード |
-
----
-
-## セキュリティ
-
-| 対策 | 実装 |
-|---|---|
-| 認証 | Auth0 + JWT（HttpOnly Cookie） |
-| データ認可 | Supabase RLSでユーザーは自分のデータのみアクセス可 |
-| SSRF対策 | `src/lib/server/ssrf.ts` で外部リクエストURLを検証 |
-| セキュリティヘッダー | `src/lib/server/security.ts` でCSP・HSTS等を設定 |
-| LINEログイン | state パラメータ検証で CSRF を防止 |
-| 依存パッケージ | `overrides` でaxios・dompurify・follow-redirectsの脆弱バージョンを強制更新 |
-
----
-
-## 既知の問題
-
-- **Next.js 15.x の `generateBuildId` バグ:** `null` を返すと型エラーになる問題。`patches/next+15.5.15.patch` で型定義を修正済み。`postinstall` フックにより `npm install` 後に自動適用されます。
-
----
-
-## ライセンス
-
-Private — All rights reserved.
+- 実シークレットは `.env.local` のみで管理してください
+- `.vercel/` と `.env*` は Git 管理対象外です
+- Supabase の migration は SQL Editor で順番に適用してください

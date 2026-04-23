@@ -17,43 +17,34 @@ type PlaceKind =
   | "sports"
   | "baby";
 
-const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
-const NOMINATIM_URL = "https://nominatim.openstreetmap.org";
+const PLACES_NEARBY_URL = "https://places.googleapis.com/v1/places:searchNearby";
+const PLACES_TEXT_URL = "https://places.googleapis.com/v1/places:searchText";
+const GEOCODING_URL = "https://maps.googleapis.com/maps/api/geocode/json";
 const CUSTOM_QUERY_RE = /^[\p{L}\p{N}\s._・ー-]{1,40}$/u;
-const UA = "kakeibo-app/1.0 (mana0214tkm@gmail.com)";
+const FIELD_MASK = "places.id,places.displayName,places.location,places.types,places.formattedAddress";
 
-const kindToOsmTags: Record<PlaceKind, Array<[string, string]>> = {
-  budget:      [["shop", "supermarket"], ["shop", "convenience"]],
-  grocery:     [["shop", "supermarket"], ["shop", "grocery"]],
-  clothes:     [["shop", "clothes"], ["shop", "fashion"]],
-  daily:       [["shop", "convenience"], ["shop", "department_store"]],
-  home:        [["shop", "houseware"], ["shop", "furniture"], ["shop", "hardware"]],
-  drugstore:   [["shop", "chemist"], ["amenity", "pharmacy"]],
-  electronics: [["shop", "electronics"]],
-  cafe:        [["amenity", "cafe"]],
-  restaurant:  [["amenity", "restaurant"], ["amenity", "fast_food"]],
-  beauty:      [["shop", "hairdresser"], ["shop", "beauty"]],
-  bookstore:   [["shop", "books"]],
-  sports:      [["shop", "sports"]],
-  baby:        [["shop", "toys"]],
-};
-
-type OsmElement = {
-  id: number;
-  type: string;
-  lat?: number;
-  lon?: number;
-  center?: { lat: number; lon: number };
-  tags?: Record<string, string>;
+const kindToTypes: Record<PlaceKind, string[]> = {
+  budget: ["supermarket", "convenience_store"],
+  grocery: ["supermarket", "grocery_store"],
+  clothes: ["clothing_store"],
+  daily: ["convenience_store", "department_store"],
+  home: ["home_goods_store", "furniture_store", "hardware_store"],
+  drugstore: ["drugstore", "pharmacy"],
+  electronics: ["electronics_store"],
+  cafe: ["cafe"],
+  restaurant: ["restaurant", "fast_food_restaurant"],
+  beauty: ["beauty_salon"],
+  bookstore: ["book_store"],
+  sports: ["sporting_goods_store"],
+  baby: ["toy_store"],
 };
 
 type PlaceResult = {
   id: string;
-  name: string;
-  lat: number;
-  lon: number;
-  type: string;
-  address: string;
+  displayName?: { text: string };
+  location: { latitude: number; longitude: number };
+  types?: string[];
+  formattedAddress?: string;
 };
 
 function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -65,69 +56,74 @@ function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return earth * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-async function geocodeArea(area: string): Promise<{ lat: number; lon: number; label: string } | null> {
-  const url = `${NOMINATIM_URL}/search?q=${encodeURIComponent(area)}&format=json&limit=1&accept-language=ja&countrycodes=jp`;
-  const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": UA } });
-  if (!res.ok) return null;
-  const data = (await res.json()) as Array<{ lat: string; lon: string; display_name: string }>;
-  const top = data[0];
+async function geocodeArea(area: string, apiKey: string): Promise<{ lat: number; lon: number; label: string } | { apiError: number } | null> {
+  const url = `${GEOCODING_URL}?address=${encodeURIComponent(area)}&key=${apiKey}&language=ja&region=jp`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error("[nearby-shops] geocodeArea failed:", res.status, body);
+    return { apiError: res.status };
+  }
+  const data = (await res.json()) as {
+    results: Array<{ geometry: { location: { lat: number; lng: number } }; formatted_address: string }>;
+  };
+  const top = data.results?.[0];
   if (!top) return null;
-  return { lat: parseFloat(top.lat), lon: parseFloat(top.lon), label: top.display_name.split(",").slice(0, 2).join(", ") };
+  return { lat: top.geometry.location.lat, lon: top.geometry.location.lng, label: top.formatted_address };
 }
 
-function buildOverpassQuery(tags: Array<[string, string]>, lat: number, lon: number, radius: number): string {
-  const r = Math.min(radius, 5000);
-  const parts = tags.flatMap(([k, v]) => [
-    `node["${k}"="${v}"](around:${r},${lat},${lon});`,
-    `way["${k}"="${v}"](around:${r},${lat},${lon});`,
-  ]);
-  return `[out:json][timeout:15];(${parts.join("")});out center 10;`;
-}
-
-function osmToPlaces(elements: OsmElement[], kind: PlaceKind): PlaceResult[] {
-  return elements
-    .filter((e) => e.tags?.name)
-    .map((e) => ({
-      id: String(e.id),
-      name: e.tags!.name!,
-      lat: e.lat ?? e.center!.lat,
-      lon: e.lon ?? e.center!.lon,
-      type: e.tags?.shop ?? e.tags?.amenity ?? kind,
-      address: [e.tags?.["addr:city"], e.tags?.["addr:street"], e.tags?.["addr:housenumber"]]
-        .filter(Boolean)
-        .join(" "),
-    }));
-}
-
-async function searchNearby(lat: number, lon: number, radius: number, kind: PlaceKind): Promise<PlaceResult[]> {
-  const query = buildOverpassQuery(kindToOsmTags[kind], lat, lon, radius);
-  const res = await fetch(OVERPASS_URL, {
+async function searchNearby(lat: number, lon: number, radius: number, kind: PlaceKind, apiKey: string): Promise<PlaceResult[] | { apiError: number }> {
+  const res = await fetch(PLACES_NEARBY_URL, {
     method: "POST",
-    body: `data=${encodeURIComponent(query)}`,
-    headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": UA },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": FIELD_MASK,
+    },
+    body: JSON.stringify({
+      includedTypes: kindToTypes[kind],
+      maxResultCount: 10,
+      locationRestriction: {
+        circle: { center: { latitude: lat, longitude: lon }, radius: Math.min(radius, 5000) },
+      },
+      languageCode: "ja",
+    }),
     cache: "no-store",
   });
   if (!res.ok) {
-    console.error("[nearby-shops] Overpass failed:", res.status);
-    return [];
+    const body = await res.text().catch(() => "");
+    console.error("[nearby-shops] searchNearby failed:", res.status, body);
+    return { apiError: res.status };
   }
-  const data = (await res.json()) as { elements: OsmElement[] };
-  return osmToPlaces(data.elements, kind);
+  const data = (await res.json()) as { places?: PlaceResult[] };
+  return data.places ?? [];
 }
 
-async function searchByText(query: string, lat: number, lon: number, radius: number): Promise<PlaceResult[]> {
-  const url = `${NOMINATIM_URL}/search?q=${encodeURIComponent(query)}&format=json&limit=10&accept-language=ja&countrycodes=jp&viewbox=${lon - 0.05},${lat + 0.05},${lon + 0.05},${lat - 0.05}&bounded=1`;
-  const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": UA } });
-  if (!res.ok) return [];
-  const data = (await res.json()) as Array<{ place_id: number; lat: string; lon: string; display_name: string; type: string }>;
-  return data.map((p) => ({
-    id: String(p.place_id),
-    name: p.display_name.split(",")[0],
-    lat: parseFloat(p.lat),
-    lon: parseFloat(p.lon),
-    type: p.type,
-    address: p.display_name.split(",").slice(1, 3).join(", ").trim(),
-  })).filter((p) => distanceKm(lat, lon, p.lat, p.lon) <= radius / 1000);
+async function searchByText(query: string, lat: number, lon: number, radius: number, apiKey: string): Promise<PlaceResult[] | { apiError: number }> {
+  const res = await fetch(PLACES_TEXT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": FIELD_MASK,
+    },
+    body: JSON.stringify({
+      textQuery: query,
+      maxResultCount: 10,
+      locationBias: {
+        circle: { center: { latitude: lat, longitude: lon }, radius: Math.min(radius, 5000) },
+      },
+      languageCode: "ja",
+    }),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error("[nearby-shops] searchByText failed:", res.status, body);
+    return { apiError: res.status };
+  }
+  const data = (await res.json()) as { places?: PlaceResult[] };
+  return data.places ?? [];
 }
 
 export async function POST(req: NextRequest) {
@@ -140,6 +136,9 @@ export async function POST(req: NextRequest) {
 
     const rateLimitError = rateLimit(req, "nearby-shops", 30, 10 * 60 * 1000, user.supabaseUserId);
     if (rateLimitError) return rateLimitError;
+
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return NextResponse.json({ error: "Google Maps API key not configured" }, { status: 503 });
 
     const parsed = await readJsonBody<{
       lat?: number;
@@ -163,8 +162,14 @@ export async function POST(req: NextRequest) {
     }
 
     if ((!Number.isFinite(lat) || !Number.isFinite(lon)) && area) {
-      const geocoded = await geocodeArea(area);
+      const geocoded = await geocodeArea(area, apiKey);
       if (!geocoded) return NextResponse.json({ error: "エリアが見つかりませんでした。別の地名を試してください。" }, { status: 404 });
+      if ("apiError" in geocoded) {
+        const msg = geocoded.apiError === 403
+          ? "Google Maps APIキーが制限されています。Google Cloud ConsoleでGeocodingAPIの制限を確認してください。"
+          : `Geocoding APIエラー (${geocoded.apiError})`;
+        return NextResponse.json({ error: msg }, { status: 502 });
+      }
       lat = geocoded.lat;
       lon = geocoded.lon;
       sourceLabel = geocoded.label;
@@ -181,19 +186,27 @@ export async function POST(req: NextRequest) {
     ];
     const kind = allowedKinds.includes(body.kind as PlaceKind) ? (body.kind as PlaceKind) : "budget";
 
-    const places = customQuery
-      ? await searchByText(customQuery, lat, lon, radius)
-      : await searchNearby(lat, lon, radius, kind);
+    const result = customQuery
+      ? await searchByText(customQuery, lat, lon, radius, apiKey)
+      : await searchNearby(lat, lon, radius, kind, apiKey);
 
+    if ("apiError" in result) {
+      const msg = result.apiError === 403
+        ? "Google Maps APIキーが制限されています。Google Cloud ConsoleでAPIキーの制限を確認してください。"
+        : `Google Maps APIエラー (${result.apiError})`;
+      return NextResponse.json({ error: msg }, { status: 502 });
+    }
+
+    const places = result;
     const items = places
       .map((p) => ({
         id: p.id,
-        name: p.name,
-        kind: p.type,
-        distanceKm: distanceKm(lat, lon, p.lat, p.lon),
-        lat: p.lat,
-        lng: p.lon,
-        address: p.address,
+        name: p.displayName?.text ?? "Unknown",
+        kind: p.types?.[0] ?? kind,
+        distanceKm: distanceKm(lat, lon, p.location.latitude, p.location.longitude),
+        lat: p.location.latitude,
+        lng: p.location.longitude,
+        address: p.formattedAddress ?? "",
         placeId: p.id,
       }))
       .sort((a, b) => a.distanceKm - b.distanceKm)

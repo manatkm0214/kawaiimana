@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { formatCurrency, type Transaction } from "@/lib/utils";
 import { useLang } from "@/lib/hooks/useLang";
@@ -402,12 +403,13 @@ export default function NearbyShopGuide({
           <>
             {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && shops[0] && (
               <div className="overflow-hidden rounded-2xl border">
-                <img
+                <Image
                   src={`https://maps.googleapis.com/maps/api/staticmap?center=${shops[0].lat},${shops[0].lng}&zoom=14&size=600x200&scale=2${shops.map((s) => `&markers=color:red%7C${s.lat},${s.lng}`).join("")}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
                   alt={t("周辺地図", "Nearby map")}
                   className="w-full object-cover"
                   width={600}
                   height={200}
+                  unoptimized
                 />
               </div>
             )}
