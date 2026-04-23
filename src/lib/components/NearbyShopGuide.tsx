@@ -123,12 +123,13 @@ export default function NearbyShopGuide({
         }),
       });
 
-      const data = (await response.json()) as { items?: ShopItem[]; source?: string | null };
+      const data = (await response.json()) as { items?: ShopItem[]; source?: string | null; error?: string };
       if (!response.ok) {
+        const reason = data.error ? ` (${data.error})` : ` (${response.status})`;
         throw new Error(
           source === "area"
-            ? t("このエリアからお店を探せませんでした。", "Could not find places from that area.")
-            : t("近くのお店を取得できませんでした。", "Could not fetch nearby places."),
+            ? t(`このエリアからお店を探せませんでした。${reason}`, `Could not find places from that area.${reason}`)
+            : t(`近くのお店を取得できませんでした。${reason}`, `Could not fetch nearby places.${reason}`),
         );
       }
 
