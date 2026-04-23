@@ -27,6 +27,10 @@ type ShopItem = {
   name: string;
   kind: string;
   distanceKm: number;
+  lat: number;
+  lng: number;
+  address: string;
+  placeId: string;
 };
 
 function detectMode(params: { savingRate: number; balance: number; expenseRatio: number }): LifestyleMode {
@@ -335,7 +339,7 @@ export default function NearbyShopGuide({
             type="button"
             onClick={() => void findAreaShops()}
             disabled={loading}
-            className="min-h-[50px] rounded-full bg-cyan-500 px-5 text-sm font-semibold text-white transition hover:bg-cyan-400 disabled:opacity-50"
+            className="min-h-12.5 rounded-full bg-cyan-500 px-5 text-sm font-semibold text-white transition hover:bg-cyan-400 disabled:opacity-50"
           >
             {loading && lastSource === "area" ? t("検索中...", "Searching...") : t("このエリアで探す", "Search this area")}
           </button>
@@ -343,7 +347,7 @@ export default function NearbyShopGuide({
             type="button"
             onClick={findNearbyShops}
             disabled={loading}
-            className="min-h-[50px] rounded-full bg-emerald-500 px-5 text-sm font-semibold text-white transition hover:bg-emerald-400 disabled:opacity-50"
+            className="min-h-12.5 rounded-full bg-emerald-500 px-5 text-sm font-semibold text-white transition hover:bg-emerald-400 disabled:opacity-50"
           >
             {loading && lastSource === "current" ? t("取得中...", "Finding...") : t("現在地で探す", "Use current location")}
           </button>
@@ -384,25 +388,48 @@ export default function NearbyShopGuide({
 
       <div className="mt-3 flex-1 space-y-2 overflow-hidden">
         {shops.length === 0 ? (
-          <div className="flex min-h-[220px] items-center rounded-2xl board-tile border border-dashed px-3 py-4 text-sm text-black">
+          <div className="flex min-h-55 items-center rounded-2xl board-tile border border-dashed px-3 py-4 text-sm text-black">
             {t("上の入力欄で店種を選んでから、エリア検索または現在地検索で候補を表示できます。", "Pick a store type above, then use area or current-location search to show results.")}
           </div>
         ) : (
-          <div className="max-h-[280px] space-y-2 overflow-y-auto pr-1">
-            {shops.map((shop, index) => (
-              <div key={shop.id} className="rounded-2xl board-tile border p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-black text-black">
-                      {index + 1}. {shop.name}
-                    </p>
-                    <p className="mt-1 text-xs text-black">{shop.kind}</p>
-                  </div>
-                  <span className="shrink-0 text-xs text-black">{shop.distanceKm.toFixed(2)} km</span>
-                </div>
+          <>
+            {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && shops[0] && (
+              <div className="overflow-hidden rounded-2xl border">
+                <img
+                  src={`https://maps.googleapis.com/maps/api/staticmap?center=${shops[0].lat},${shops[0].lng}&zoom=14&size=600x200&scale=2${shops.map((s) => `&markers=color:red%7C${s.lat},${s.lng}`).join("")}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
+                  alt={t("周辺地図", "Nearby map")}
+                  className="w-full object-cover"
+                  width={600}
+                  height={200}
+                />
               </div>
-            ))}
-          </div>
+            )}
+            <div className="max-h-70 space-y-2 overflow-y-auto pr-1">
+              {shops.map((shop, index) => (
+                <div key={shop.id} className="rounded-2xl board-tile border p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-black">
+                        {index + 1}. {shop.name}
+                      </p>
+                      {shop.address && <p className="mt-0.5 text-xs text-black">{shop.address}</p>}
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <span className="text-xs text-black">{shop.distanceKm.toFixed(2)} km</span>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name)}&query_place_id=${shop.placeId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-full bg-cyan-500 px-2 py-0.5 text-xs font-semibold text-white hover:bg-cyan-400"
+                      >
+                        {t("地図", "Map")}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
