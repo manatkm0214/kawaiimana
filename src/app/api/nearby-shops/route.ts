@@ -316,7 +316,7 @@ function buildOsmSelectors(kind: PlaceKind, customQuery?: string) {
 
 function buildOsmQuery(lat: number, lon: number, radius: number, kind: PlaceKind, customQuery?: string) {
   const selectors = buildOsmSelectors(kind, customQuery);
-  return `[out:json][timeout:20];
+  return `[out:json][timeout:8];
 (
 ${selectors.join(";\n").replaceAll("RADIUS", String(radius)).replaceAll("LAT", String(lat)).replaceAll("LON", String(lon))};
 );
@@ -375,16 +375,30 @@ async function searchWithOsm(
   customQuery?: string,
 ): Promise<NearbyItem[] | { apiError: number }> {
   const query = buildOsmQuery(lat, lon, radius, kind, customQuery);
-  const response = await fetch(OVERPASS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=UTF-8" },
-    body: query,
-    cache: "no-store",
-  });
+  const endpoints = [OVERPASS_URL, "https://overpass.kumi.systems/api/interpreter"];
 
-  if (!response.ok) {
-    console.error("[nearby-shops] searchWithOsm failed:", response.status);
-    return { apiError: response.status };
+  let response: Response | null = null;
+  for (const endpoint of endpoints) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 9000);
+      response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=UTF-8" },
+        body: query,
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (response.ok) break;
+    } catch {
+      continue;
+    }
+  }
+
+  if (!response?.ok) {
+    console.error("[nearby-shops] searchWithOsm failed on all endpoints");
+    return { apiError: response?.status ?? 503 };
   }
 
   const payload = (await response.json()) as {
@@ -446,8 +460,6 @@ export async function POST(req: NextRequest) {
     const rateLimitError = rateLimit(req, "nearby-shops", 30, 10 * 60 * 1000, user.supabaseUserId);
     if (rateLimitError) return rateLimitError;
 
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || "";
-
     const parsed = await readJsonBody<{
       lat?: number;
       lon?: number;
@@ -462,7 +474,6 @@ export async function POST(req: NextRequest) {
     let lat = Number(body.lat);
     let lon = Number(body.lon);
     let sourceLabel = "";
-    let geocodeError: GoogleApiError | null = null;
 
     const area = boundedText(body.area, 100);
     const customQuery = boundedText(body.customQuery, 40);
@@ -472,30 +483,14 @@ export async function POST(req: NextRequest) {
     }
 
     if ((!Number.isFinite(lat) || !Number.isFinite(lon)) && area) {
-      if (apiKey) {
-        const googleGeocoded = await geocodeAreaWithGoogle(area, apiKey);
-        if (googleGeocoded && "apiError" in googleGeocoded) {
-          geocodeError = googleGeocoded;
-        } else if (googleGeocoded) {
-          lat = googleGeocoded.lat;
-          lon = googleGeocoded.lon;
-          sourceLabel = googleGeocoded.label;
-        }
+      const osmGeocoded = await geocodeAreaWithOsm(area);
+      if (osmGeocoded) {
+        lat = osmGeocoded.lat;
+        lon = osmGeocoded.lon;
+        sourceLabel = osmGeocoded.label;
       }
 
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-        const osmGeocoded = await geocodeAreaWithOsm(area);
-        if (osmGeocoded) {
-          lat = osmGeocoded.lat;
-          lon = osmGeocoded.lon;
-          sourceLabel = osmGeocoded.label;
-        }
-      }
-
-      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-        if (geocodeError) {
-          return NextResponse.json({ error: formatGoogleError(geocodeError, "geocode") }, { status: 502 });
-        }
         return NextResponse.json({ error: "エリアが見つかりませんでした。別の地名を試してください。" }, { status: 404 });
       }
     }
@@ -511,36 +506,12 @@ export async function POST(req: NextRequest) {
     ];
     const kind = allowedKinds.includes(body.kind as PlaceKind) ? (body.kind as PlaceKind) : "budget";
 
-    let items: NearbyItem[] = [];
-    let provider: SearchProvider = "osm";
-    let searchError: GoogleApiError | null = null;
-
-    if (apiKey) {
-      const googleResult = customQuery
-        ? await searchByTextWithGoogle(customQuery, lat, lon, radius, apiKey)
-        : await searchNearbyWithGoogle(lat, lon, radius, kind, apiKey);
-
-      if ("apiError" in googleResult) {
-        searchError = googleResult;
-      } else {
-        items = mapGooglePlacesToItems(lat, lon, kind, googleResult);
-        provider = "google";
-      }
+    const osmResult = await searchWithOsm(lat, lon, radius, kind, customQuery || undefined);
+    if ("apiError" in osmResult) {
+      return NextResponse.json({ error: "周辺のお店情報を取得できませんでした。時間をおいて再試行してください。" }, { status: 502 });
     }
 
-    if (items.length === 0) {
-      const osmResult = await searchWithOsm(lat, lon, radius, kind, customQuery || undefined);
-      if ("apiError" in osmResult) {
-        if (searchError) {
-          return NextResponse.json({ error: formatGoogleError(searchError, "places") }, { status: 502 });
-        }
-        return NextResponse.json({ error: "周辺のお店情報を取得できませんでした。" }, { status: 502 });
-      }
-      items = osmResult;
-      provider = "osm";
-    }
-
-    return NextResponse.json({ items, source: sourceLabel || null, provider });
+    return NextResponse.json({ items: osmResult, source: sourceLabel || null, provider: "osm" as SearchProvider });
   } catch (e) {
     console.error("[nearby-shops] unexpected error:", e);
     return NextResponse.json({ error: "failed to fetch nearby shops" }, { status: 500 });
