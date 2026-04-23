@@ -2,8 +2,6 @@
 
 > AI搭載のスマート家計管理アプリ（Next.js 15 + TypeScript + Supabase + Auth0）
 
-**本番URL:** https://manakare.netlify.app
-
 ---
 
 ## 機能一覧
@@ -31,7 +29,7 @@
 
 | レイヤー | 技術 | バージョン |
 |---|---|---|
-| フレームワーク | Next.js (App Router) | 15.5.15 |
+| フレームワーク | Next.js (App Router) | 15.5.x |
 | 言語 | TypeScript | 5.x |
 | スタイル | Tailwind CSS | v4 |
 | DB | Supabase (PostgreSQL + RLS) | 最新 |
@@ -42,7 +40,7 @@
 | PDF | jsPDF | 4.x |
 | メール | Resend | 6.x |
 | 国際化 | next-intl | 4.9.x |
-| デプロイ | Netlify | — |
+| デプロイ | Cloud Run / Vercel | — |
 
 ---
 
@@ -52,7 +50,7 @@
 ブラウザ（React / Tailwind）
     │
     ▼
-Netlify Edge（Next.js App Router）
+Cloud Run / Vercel（Next.js App Router）
     ├── /app/page.tsx         ホーム・認証フロー
     ├── /app/api/*            REST APIエンドポイント群
     │       ├── home-data     初期データ取得
@@ -118,6 +116,8 @@ src/
 
 ```bash
 npm install
+cp .env.example .env.local
+# .env.local を編集して各値を入力
 npm run dev
 # → http://localhost:3000
 ```
@@ -128,7 +128,7 @@ npm run dev
 
 ## 環境変数
 
-`.env.local` に以下を設定：
+`.env.example` をコピーして `.env.local` を作成し、各値を設定してください。
 
 ```env
 # Supabase
@@ -137,7 +137,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
 # Auth0
-AUTH0_DOMAIN=dev-mlg3q0p27ecq1qnh.us.auth0.com
+AUTH0_DOMAIN=
 AUTH0_CLIENT_ID=
 AUTH0_CLIENT_SECRET=
 AUTH0_SECRET=
@@ -153,29 +153,26 @@ LINE_CHANNEL_SECRET=
 
 # メール（お問い合わせ・パスワードリセット）
 RESEND_API_KEY=
+
+# デモモード（デモ環境のみ）
+NEXT_PUBLIC_DEMO_EMAIL=
+NEXT_PUBLIC_DEMO_PASSWORD=
+NEXT_PUBLIC_ENABLE_LINE_LOGIN=true
+NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN=true
 ```
 
 ---
 
 ## Supabaseセットアップ
 
-Supabase Dashboardの **SQL Editor** で以下のファイルを順番に実行してください：
+Supabase Dashboard の **SQL Editor** で以下のファイルを順番に実行してください：
 
-```bash
-# 1. 基本スキーマ（profiles / transactions / budgets テーブル + RLS）
-supabase_schema_fixed.sql
-
-# 2. Auth0プロフィール紐付け
-supabase_auth0_profile_binding_migration.sql
-
-# 3. 予算余剰機能
-supabase_budget_surplus_migration.sql
-
-# 4. 予算トレードオフ機能
-supabase_budget_tradeoff_migration.sql
-
-# 5. 口座引落予約機能
-supabase_debit_reservations_migration.sql
+```
+1. supabase_schema_fixed.sql                      基本スキーマ（profiles / transactions / budgets + RLS）
+2. supabase_auth0_profile_binding_migration.sql   Auth0プロフィール紐付け
+3. supabase_budget_surplus_migration.sql          予算余剰機能
+4. supabase_budget_tradeoff_migration.sql         予算トレードオフ機能
+5. supabase_debit_reservations_migration.sql      口座引落予約機能
 ```
 
 > RLS（Row Level Security）が有効になっており、ユーザーは自分のデータのみアクセスできます。
@@ -186,9 +183,9 @@ supabase_debit_reservations_migration.sql
 
 ### Auth0
 
-- **Allowed Callback URLs:** `https://manakare.netlify.app/auth/callback, http://localhost:3000/auth/callback`
-- **Allowed Logout URLs:** `https://manakare.netlify.app, http://localhost:3000`
-- **Allowed Web Origins:** `https://manakare.netlify.app, http://localhost:3000`
+- **Allowed Callback URLs:** `{本番URL}/auth/callback, http://localhost:3000/auth/callback`
+- **Allowed Logout URLs:** `{本番URL}, http://localhost:3000`
+- **Allowed Web Origins:** `{本番URL}, http://localhost:3000`
 
 ### Google OAuth (Google Cloud Console)
 
@@ -196,18 +193,38 @@ supabase_debit_reservations_migration.sql
 
 ### LINE Login (LINE Developers)
 
-- **Callback URL:** `https://manakare.netlify.app/api/auth/line/callback`
+- **Callback URL:** `{本番URL}/api/auth/line/callback`
 - Channel IDとChannel Secretを取得し、環境変数に設定
 
 ---
 
-## Netlifyデプロイ
+## デプロイ
 
-`netlify.toml` に設定済み。Gitリポジトリを接続して以下を設定するだけで自動デプロイされます：
+### 本番環境 — Cloud Run（GitHub Actions自動デプロイ）
 
-1. Netlify Dashboard → **Site configuration > Environment variables** に上記の環境変数を設定
-2. **Build command:** `npm run build`（自動検出）
-3. **Publish directory:** `.next`（自動検出）
+`main` ブランチへのプッシュで自動デプロイされます（[.github/workflows/deploy.yml](.github/workflows/deploy.yml)）。
+
+**必要なGitHub Secrets：**
+
+| Secret名 | 内容 |
+|---|---|
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | Workload Identity プロバイダーのリソース名 |
+| `GCP_SERVICE_ACCOUNT` | デプロイ用サービスアカウントのメールアドレス |
+
+Cloud Runサービス名: `kakeibo-app`、リージョン: `asia-northeast1`
+
+**Cloud Runにも以下の環境変数を設定してください（上記の環境変数一覧を参照）。**
+
+---
+
+### デモ環境 — Vercel（手動 or 別リポジトリ）
+
+```bash
+npm i -g vercel
+vercel --prod
+```
+
+Vercel Dashboard の **Environment Variables** に環境変数を設定します。デモ用アカウント情報（`NEXT_PUBLIC_DEMO_EMAIL` / `NEXT_PUBLIC_DEMO_PASSWORD`）も忘れずに。
 
 ---
 
@@ -219,13 +236,14 @@ supabase_debit_reservations_migration.sql
 | データ認可 | Supabase RLSでユーザーは自分のデータのみアクセス可 |
 | SSRF対策 | `src/lib/server/ssrf.ts` で外部リクエストURLを検証 |
 | セキュリティヘッダー | `src/lib/server/security.ts` でCSP・HSTS等を設定 |
+| LINEログイン | state パラメータ検証で CSRF を防止 |
 | 依存パッケージ | `overrides` でaxios・dompurify・follow-redirectsの脆弱バージョンを強制更新 |
 
 ---
 
 ## 既知の問題
 
-- **Next.js 15.5.15 の `generateBuildId` バグ:** `null` を返すと型エラーになる問題。`patches/next+15.5.15.patch` で型定義を修正済み。`postinstall` フックにより `npm install` 後に自動適用されます。
+- **Next.js 15.x の `generateBuildId` バグ:** `null` を返すと型エラーになる問題。`patches/next+15.5.15.patch` で型定義を修正済み。`postinstall` フックにより `npm install` 後に自動適用されます。
 
 ---
 
