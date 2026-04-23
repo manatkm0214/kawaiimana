@@ -1,6 +1,7 @@
 ﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
   generateBuildId: () => null,
+  output: "standalone",
   images: {
     remotePatterns: [
       {

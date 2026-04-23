@@ -15,12 +15,12 @@ function readEnv(...keys: string[]) {
 }
 
 function getBaseUrl(request?: Request): string {
+  const siteUrl = readEnv("NEXT_PUBLIC_SITE_URL", "next_public_site_url")
+  if (siteUrl) return siteUrl.replace(/\/$/, "")
   if (request) {
     const origin = new URL(request.url).origin
     if (origin) return origin.replace(/\/$/, "")
   }
-  const siteUrl = readEnv("NEXT_PUBLIC_SITE_URL", "next_public_site_url")
-  if (siteUrl) return siteUrl.replace(/\/$/, "")
   return "http://localhost:3000"
 }
 

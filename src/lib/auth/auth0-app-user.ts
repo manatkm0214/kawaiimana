@@ -174,19 +174,57 @@ function verifyLineSessionCookie(cookieValue: string, secret: string): LineSessi
 }
 
 async function getAppSessionUserFromLineCookie(): Promise<AppSessionUser | null> {
+  const cookieStore = await cookies()
+  const cookieValue = cookieStore.get("line_session")?.value
+  if (!cookieValue) return null
+
+  const secret = process.env.AUTH0_SECRET?.trim() || process.env.LINE_CHANNEL_SECRET?.trim() || ""
+  if (!secret) {
+    console.error("[line-session] No secret configured (AUTH0_SECRET or LINE_CHANNEL_SECRET)")
+    return null
+  }
+
+  const payload = verifyLineSessionCookie(cookieValue, secret)
+  if (!payload) {
+    console.error("[line-session] Cookie signature verification failed")
+    return null
+  }
+
   try {
-    const cookieStore = await cookies()
-    const cookieValue = cookieStore.get("line_session")?.value
-    if (!cookieValue) return null
-
-    const secret = process.env.AUTH0_SECRET?.trim() || process.env.LINE_CHANNEL_SECRET?.trim() || ""
-    if (!secret) return null
-
-    const payload = verifyLineSessionCookie(cookieValue, secret)
-    if (!payload) return null
-
     await ensureProfile(payload.supabaseUserId, payload.name, payload.email, payload.auth0Sub)
+  } catch (err) {
+    console.error("[line-session] ensureProfile failed (non-fatal):", err)
+  }
 
+  return {
+    auth0Sub: payload.auth0Sub,
+    email: payload.email,
+    name: payload.name,
+    picture: payload.picture,
+    supabaseUserId: payload.supabaseUserId,
+  }
+}
+
+function parseCookieFromHeader(cookieHeader: string, name: string): string | undefined {
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`))
+  return match ? decodeURIComponent(match[1]) : undefined
+}
+
+export async function getAppSessionUserFromRequest(request: Request): Promise<AppSessionUser | null> {
+  const cookieHeader = request.headers.get("cookie") ?? ""
+  const secret = process.env.AUTH0_SECRET?.trim() || process.env.LINE_CHANNEL_SECRET?.trim() || ""
+  if (!secret) return null
+
+  for (const name of ["line_session", "google_session"]) {
+    const cookieValue = parseCookieFromHeader(cookieHeader, name)
+    if (!cookieValue) continue
+    const payload = verifyLineSessionCookie(cookieValue, secret)
+    if (!payload) continue
+    try {
+      await ensureProfile(payload.supabaseUserId, payload.name, payload.email, payload.auth0Sub)
+    } catch (err) {
+      console.error(`[${name}] ensureProfile failed (non-fatal):`, err)
+    }
     return {
       auth0Sub: payload.auth0Sub,
       email: payload.email,
@@ -194,15 +232,51 @@ async function getAppSessionUserFromLineCookie(): Promise<AppSessionUser | null>
       picture: payload.picture,
       supabaseUserId: payload.supabaseUserId,
     }
-  } catch {
+  }
+  return null
+}
+
+async function getAppSessionUserFromGoogleCookie(): Promise<AppSessionUser | null> {
+  const cookieStore = await cookies()
+  const cookieValue = cookieStore.get("google_session")?.value
+  if (!cookieValue) return null
+
+  const secret = process.env.AUTH0_SECRET?.trim() || process.env.GOOGLE_CLIENT_SECRET?.trim() || ""
+  if (!secret) {
+    console.error("[google-session] No secret configured")
     return null
+  }
+
+  const payload = verifyLineSessionCookie(cookieValue, secret)
+  if (!payload) {
+    console.error("[google-session] Cookie signature verification failed")
+    return null
+  }
+
+  try {
+    await ensureProfile(payload.supabaseUserId, payload.name, payload.email, payload.auth0Sub)
+  } catch (err) {
+    console.error("[google-session] ensureProfile failed (non-fatal):", err)
+  }
+
+  return {
+    auth0Sub: payload.auth0Sub,
+    email: payload.email,
+    name: payload.name,
+    picture: payload.picture,
+    supabaseUserId: payload.supabaseUserId,
   }
 }
 
 export async function getAppSessionUser(): Promise<AppSessionUser | null> {
-  const session = await auth0.getSession()
+  let session = null
+  try {
+    session = await auth0.getSession()
+  } catch {
+    // no Auth0 session
+  }
   if (!session?.user) {
-    return getAppSessionUserFromLineCookie()
+    return (await getAppSessionUserFromLineCookie()) ?? getAppSessionUserFromGoogleCookie()
   }
 
   const rawEmail = typeof session.user.email === "string" ? session.user.email.trim().toLowerCase() : ""

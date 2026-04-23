@@ -488,7 +488,7 @@ export default function Home() {
     if (!shouldKeepHouseholdLocalState()) {
       clearHouseholdLocalState();
     }
-    window.location.href = "/auth/logout";
+    window.location.href = "/api/auth/signout";
     setUser(null);
     setProfile(null);
     setTransactions([]);
@@ -921,14 +921,14 @@ export default function Home() {
       )}
 
       {showAccountSettings && user && (
-        <div className="fixed inset-0 z-76 overflow-y-auto bg-slate-950 p-4">
+        <div className="fixed inset-0 z-9999 overflow-y-auto bg-slate-950/90 p-4 backdrop-blur-sm">
           <AccountSettings
             user={user}
             profile={profile}
+            isAnonymous={user.is_anonymous}
             onClose={() => setShowAccountSettings(false)}
             onProfileUpdated={(nextProfile) => {
               setProfile(nextProfile);
-              void loadData();
             }}
           />
         </div>

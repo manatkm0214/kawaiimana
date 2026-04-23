@@ -34,27 +34,16 @@ function signSessionCookie(payload: object, secret: string): string {
   return `${data}.${sig}`
 }
 
-async function findOrCreateSupabaseUser(email: string, displayName: string, lineUserId: string): Promise<{ id: string | null; error: string | null }> {
+async function findOrCreateSupabaseUser(email: string, displayName: string): Promise<{ id: string | null; error: string | null }> {
   const supabaseAdmin = getSupabaseAdmin()
-
-  // generateLink はユーザーが存在しない場合は作成し、存在する場合はそのまま返す
   const { data, error } = await supabaseAdmin.auth.admin.generateLink({
     type: "magiclink",
     email,
-    options: {
-      data: { display_name: displayName, line_id: lineUserId },
-    },
+    options: { data: { display_name: displayName } },
   })
-
-  if (error) {
-    return { id: null, error: `generateLink失敗: ${error.message}` }
-  }
-
+  if (error) return { id: null, error: `generateLink失敗: ${error.message}` }
   const userId = data?.user?.id
-  if (!userId) {
-    return { id: null, error: "userIDが取得できませんでした" }
-  }
-
+  if (!userId) return { id: null, error: "userIDが取得できませんでした" }
   return { id: userId, error: null }
 }
 
@@ -67,27 +56,27 @@ export async function GET(request: NextRequest) {
   const oauthError = request.nextUrl.searchParams.get("error")
 
   if (oauthError || !code) {
-    homeUrl.searchParams.set("auth_error", oauthError ?? "LINEログインがキャンセルされました")
+    homeUrl.searchParams.set("auth_error", oauthError ?? "Googleログインがキャンセルされました")
     return NextResponse.redirect(homeUrl.toString())
   }
 
-  const clientId = readEnv("LINE_CHANNEL_ID")
-  const clientSecret = readEnv("LINE_CHANNEL_SECRET")
+  const clientId = readEnv("GOOGLE_CLIENT_ID")
+  const clientSecret = readEnv("GOOGLE_CLIENT_SECRET")
   const sessionSecret = readEnv("AUTH0_SECRET") || clientSecret
 
   if (!clientId || !clientSecret) {
-    homeUrl.searchParams.set("auth_error", "LINE設定が不正です（環境変数未設定）")
+    homeUrl.searchParams.set("auth_error", "Google設定が不正です（環境変数未設定）")
     return NextResponse.redirect(homeUrl.toString())
   }
 
-  if (state && !verifyState(state, clientSecret)) {
+  if (state && !verifyState(state, sessionSecret)) {
     homeUrl.searchParams.set("auth_error", "不正なリクエストです（stateエラー）")
     return NextResponse.redirect(homeUrl.toString())
   }
 
-  // Exchange code for LINE token
-  const redirectUri = `${baseUrl}/api/auth/line/callback`
-  const tokenRes = await fetch("https://api.line.me/oauth2/v2.1/token", {
+  const redirectUri = `${baseUrl}/api/auth/google/callback`
+
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -101,52 +90,47 @@ export async function GET(request: NextRequest) {
 
   if (!tokenRes.ok) {
     const body = await tokenRes.text()
-    console.error("[line-callback] token error:", body)
-    homeUrl.searchParams.set("auth_error", "LINEログインに失敗しました。しばらくしてから再度お試しください。")
+    console.error("[google-callback] token error:", body)
+    homeUrl.searchParams.set("auth_error", "Googleログインに失敗しました。しばらくしてから再度お試しください。")
     return NextResponse.redirect(homeUrl.toString())
   }
 
   const { access_token } = await tokenRes.json() as { access_token: string }
 
-  // Get LINE profile
-  const profileRes = await fetch("https://api.line.me/v2/profile", {
+  const profileRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
     headers: { Authorization: `Bearer ${access_token}` },
   })
 
   if (!profileRes.ok) {
-    homeUrl.searchParams.set("auth_error", "LINEプロフィール取得に失敗しました")
+    homeUrl.searchParams.set("auth_error", "Googleプロフィール取得に失敗しました")
     return NextResponse.redirect(homeUrl.toString())
   }
 
-  const lineProfile = await profileRes.json() as { userId: string; displayName: string; pictureUrl?: string }
-  const lineUserId = lineProfile.userId
-  const displayName = lineProfile.displayName ?? ""
-  const picture = lineProfile.pictureUrl ?? null
+  const profile = await profileRes.json() as { id: string; email: string; name?: string; picture?: string }
+  const email = profile.email.trim().toLowerCase()
+  const displayName = profile.name ?? ""
+  const picture = profile.picture ?? null
+  const googleUserId = profile.id
 
-  const safeLineId = lineUserId.replace(/[^a-zA-Z0-9]/g, "")
-  const email = `line_${safeLineId}@line.placeholder`
-
-  const { id: supabaseUserId, error: userError } = await findOrCreateSupabaseUser(email, displayName, lineUserId)
+  const { id: supabaseUserId, error: userError } = await findOrCreateSupabaseUser(email, displayName)
   if (!supabaseUserId) {
-    console.error("[line-callback] supabase error:", userError)
+    console.error("[google-callback] supabase error:", userError)
     homeUrl.searchParams.set("auth_error", "アカウントの作成に失敗しました。しばらくしてから再度お試しください。")
     return NextResponse.redirect(homeUrl.toString())
   }
 
-  // Create signed session cookie
   const payload = {
     supabaseUserId,
     email,
     name: displayName || null,
     picture,
-    auth0Sub: `line|${lineUserId}`,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7 days
+    auth0Sub: `google|${googleUserId}`,
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
   }
 
   const cookieValue = signSessionCookie(payload, sessionSecret)
-
   const response = NextResponse.redirect(homeUrl.toString())
-  response.cookies.set("line_session", cookieValue, {
+  response.cookies.set("google_session", cookieValue, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",

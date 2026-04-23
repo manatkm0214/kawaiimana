@@ -13,11 +13,12 @@ export async function GET() {
       ...data,
     })
   } catch (error) {
-    console.error("[home-data] load failed:", error)
+    const message = error instanceof Error ? error.message : String(error)
+    console.error("[home-data] load failed:", message)
     return NextResponse.json(
       {
         authenticated: false,
-        error: "Could not load app data",
+        error: message,
       },
       { status: 500 }
     )

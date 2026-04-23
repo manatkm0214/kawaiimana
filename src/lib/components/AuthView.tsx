@@ -1,8 +1,6 @@
 "use client"
 
-import Link from "next/link"
-import { useState } from "react"
-import { FaEnvelope, FaGoogle, FaLine } from "react-icons/fa"
+import { FaGoogle, FaLine } from "react-icons/fa"
 import { useLang } from "@/lib/hooks/useLang"
 
 interface AuthViewProps {
@@ -137,26 +135,9 @@ function PlushBuddy() {
   )
 }
 
-export default function AuthView({ onAuth, onBack, initialMessage, initialEmail, otpEmail, onGuestLogin }: AuthViewProps) {
+export default function AuthView({ onBack, initialMessage, onGuestLogin }: AuthViewProps) {
   const lang = useLang()
   const t = (ja: string, en: string) => (lang === "en" ? en : ja)
-  const [email, setEmail] = useState(initialEmail || otpEmail || "")
-
-  function startLogin(mode: "login" | "register", connection?: "google-oauth2" | "line") {
-    if (connection === "line") {
-      window.location.href = "/api/auth/line/start"
-      return
-    }
-    if (connection) {
-      window.location.href = `/auth/login?connection=${encodeURIComponent(connection)}`
-      return
-    }
-    if (mode === "register") {
-      window.location.href = "/auth/login?screen_hint=signup"
-      return
-    }
-    void Promise.resolve(onAuth(mode, email))
-  }
 
   return (
     <div
@@ -208,74 +189,22 @@ export default function AuthView({ onAuth, onBack, initialMessage, initialEmail,
             </p>
           </div>
 
-          <div
-            className="rounded-3xl px-5 py-5"
-            style={{
-              background: "linear-gradient(135deg, rgba(255,255,255,0.96), rgba(253,242,248,0.92))",
-              border: "1.5px solid rgba(244,114,182,0.18)",
-              boxShadow: "0 10px 28px -14px rgba(236,72,153,0.16), inset 0 1px 0 rgba(255,255,255,0.92)",
-            }}
-          >
-            {initialMessage && (
-              <div
-                className={`mb-4 rounded-2xl px-4 py-3 text-sm ${
-                  initialMessage.type === "success"
-                    ? "border border-emerald-300 bg-emerald-50 text-emerald-800"
-                    : "border border-rose-300 bg-rose-50 text-rose-800"
-                }`}
-              >
-                {initialMessage.text}
-              </div>
-            )}
-
-            <label className="block">
-              <span className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em]" style={{ color: "#BE185D" }}>
-                <FaEnvelope />
-                {t("メールアドレス", "Email")}
-              </span>
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-2xl px-4 py-3 text-sm outline-none transition"
-                style={{
-                  border: "1.5px solid rgba(244,114,182,0.24)",
-                  background: "rgba(255,255,255,0.82)",
-                  color: "#1C1917",
-                }}
-              />
-            </label>
-          </div>
+          {initialMessage && (
+            <div
+              className={`rounded-2xl px-4 py-3 text-sm ${
+                initialMessage.type === "success"
+                  ? "border border-emerald-300 bg-emerald-50 text-emerald-800"
+                  : "border border-rose-300 bg-rose-50 text-rose-800"
+              }`}
+            >
+              {initialMessage.text}
+            </div>
+          )}
 
           <div className="grid gap-3">
             <button
               type="button"
-              onClick={() => startLogin("login")}
-              className="rounded-full px-5 py-4 text-sm font-bold tracking-wide text-white transition hover:brightness-105"
-              style={{
-                background: "linear-gradient(135deg, #EC4899, #FB7185 52%, #60A5FA 100%)",
-                boxShadow: "0 14px 34px -10px rgba(236,72,153,0.36)",
-              }}
-            >
-              {t("ログインへ進む", "Continue to login")}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => startLogin("register")}
-              className="rounded-full px-5 py-4 text-sm font-bold text-white transition hover:brightness-105"
-              style={{
-                background: "linear-gradient(135deg, #F472B6, #C084FC 52%, #7DD3FC 100%)",
-                boxShadow: "0 14px 30px -12px rgba(192,132,252,0.35)",
-              }}
-            >
-              {t("会員登録へ進む", "Create account")}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => startLogin("login", "google-oauth2")}
+              onClick={() => { window.location.href = "/api/auth/google/start" }}
               className="rounded-full px-5 py-4 text-sm font-semibold transition hover:brightness-95"
               style={{
                 background: "linear-gradient(135deg, #FFFFFF, #F8FAFC)",
@@ -292,7 +221,7 @@ export default function AuthView({ onAuth, onBack, initialMessage, initialEmail,
 
             <button
               type="button"
-              onClick={() => startLogin("login", "line")}
+              onClick={() => { window.location.href = "/api/auth/line/start" }}
               className="rounded-full px-5 py-4 text-sm font-semibold text-white transition hover:brightness-105"
               style={{
                 background: "linear-gradient(135deg, #22C55E, #16A34A)",
@@ -321,13 +250,12 @@ export default function AuthView({ onAuth, onBack, initialMessage, initialEmail,
             )}
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-2">
             {[
               { href: "/privacy", label: t("プライバシー", "Privacy") },
               { href: "/terms", label: t("利用規約", "Terms") },
-              { href: "/auth/reset-password", label: t("パスワード再設定", "Reset") },
             ].map((link) => (
-              <Link
+              <a
                 key={link.href}
                 href={link.href}
                 className="rounded-2xl px-3 py-2.5 text-center text-xs font-semibold transition hover:brightness-95"
@@ -338,7 +266,7 @@ export default function AuthView({ onAuth, onBack, initialMessage, initialEmail,
                 }}
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
           </div>
 

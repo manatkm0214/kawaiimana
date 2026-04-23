@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
-import { getAppSessionUser } from "@/lib/auth/auth0-app-user"
+import { getAppSessionUser, getAppSessionUserFromRequest } from "@/lib/auth/auth0-app-user"
 import { getSupabaseAdmin } from "@/lib/supabase/admin"
-import { boundedText, readJsonBody, requireSameOrigin } from "@/lib/server/security"
+import { boundedText, readJsonBody } from "@/lib/server/security"
 
 interface ProfilePayload {
   display_name?: string | null
@@ -19,13 +19,18 @@ function normalizeRate(value: unknown) {
 }
 
 export async function POST(request: Request) {
-  const originError = requireSameOrigin(request)
-  if (originError) return originError
-
   const supabaseAdmin = getSupabaseAdmin()
-  const user = await getAppSessionUser()
+  let user = null
+  try {
+    user = await getAppSessionUser()
+  } catch {
+    // Auth0 session not available, try request cookies directly
+  }
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    user = await getAppSessionUserFromRequest(request)
+  }
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized: no session" }, { status: 401 })
   }
 
   const parsed = await readJsonBody<ProfilePayload>(request, 8_000)
@@ -63,6 +68,7 @@ export async function POST(request: Request) {
     .single()
 
   if (error || !data) {
+    console.error("[profile] upsert failed:", error)
     return NextResponse.json({ error: error?.message ?? "Could not save profile" }, { status: 500 })
   }
 

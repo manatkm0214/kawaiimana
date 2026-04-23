@@ -5,5 +5,6 @@ export async function GET(request: NextRequest) {
   const base = getRequestAppBaseUrl(request)
   const response = NextResponse.redirect(new URL("/", base).toString())
   response.cookies.delete("line_session")
+  response.cookies.delete("google_session")
   return response
 }

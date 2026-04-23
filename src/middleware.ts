@@ -7,6 +7,7 @@ export async function middleware(request: NextRequest) {
   // LINEセッションCookieをログアウト時に削除
   if (request.nextUrl.pathname === "/auth/logout") {
     response.cookies.delete("line_session")
+    response.cookies.delete("google_session")
   }
 
   return response
