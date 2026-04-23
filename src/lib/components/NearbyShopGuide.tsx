@@ -1,7 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+
+type CacheEntry = { items: ShopItem[]; ts: number };
+const shopCache = new Map<string, CacheEntry>();
+const CACHE_TTL = 5 * 60 * 1000;
 import { formatCurrency, type Transaction } from "@/lib/utils";
 import { useLang } from "@/lib/hooks/useLang";
 import type { LifestyleSuggestion } from "./FoodLifestyleAssistant";
@@ -133,6 +137,9 @@ export default function NearbyShopGuide({
   }
 
   async function searchOverpass(lat: number, lon: number, radius: number, cKind: ShopKind, cQuery: string): Promise<ShopItem[]> {
+    const cacheKey = `${lat.toFixed(3)},${lon.toFixed(3)},${radius},${cKind},${cQuery}`;
+    const cached = shopCache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.items;
     const r = Math.min(radius, 2000);
     let selectors: string[];
     if (cQuery.trim()) {
@@ -172,6 +179,7 @@ export default function NearbyShopGuide({
           })
           .sort((a, b) => a.distanceKm - b.distanceKm)
           .slice(0, 6);
+        shopCache.set(cacheKey, { items, ts: Date.now() });
         return items;
       } catch (e) { console.warn("[overpass] error:", ep, e); continue; }
     }
