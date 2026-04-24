@@ -502,12 +502,17 @@ export async function POST(req: NextRequest) {
 
     let items: NearbyItem[] = [];
     let provider: SearchProvider = "osm";
+    let googleError: GoogleApiError | null = null;
+    let osmError: number | null = null;
 
     if (apiKey) {
       const googleResult = customQuery
         ? await searchByTextWithGoogle(customQuery, lat, lon, radius, apiKey)
         : await searchNearbyWithGoogle(lat, lon, radius, kind, apiKey);
-      if (!("apiError" in googleResult)) {
+      if ("apiError" in googleResult) {
+        googleError = googleResult;
+        console.error("[nearby-shops] Google failed:", googleResult);
+      } else {
         items = mapGooglePlacesToItems(lat, lon, kind, googleResult);
         provider = "google";
       }
@@ -515,10 +520,22 @@ export async function POST(req: NextRequest) {
 
     if (items.length === 0) {
       const osmResult = await searchWithOsm(lat, lon, radius, kind, customQuery || undefined);
-      if (!("apiError" in osmResult)) { items = osmResult; provider = "osm"; }
+      if ("apiError" in osmResult) {
+        osmError = osmResult.apiError;
+      } else {
+        items = osmResult;
+        provider = "osm";
+      }
     }
 
-    return NextResponse.json({ items, source: sourceLabel || null, provider });
+    const debug = items.length === 0 ? {
+      googleTried: !!apiKey,
+      googleErrorCode: googleError?.apiError ?? null,
+      googleErrorMsg: googleError?.message ?? null,
+      osmErrorCode: osmError,
+    } : undefined;
+
+    return NextResponse.json({ items, source: sourceLabel || null, provider, debug });
   } catch (e) {
     console.error("[nearby-shops] unexpected error:", e);
     return NextResponse.json({ error: "failed to fetch nearby shops" }, { status: 500 });

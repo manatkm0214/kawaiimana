@@ -193,9 +193,6 @@ export default function NearbyShopGuide({
 
     try {
       const radius = kind === "clothes" || kind === "home" || kind === "electronics" ? 2500 : 1800;
-      const lat = payload.lat ?? NaN;
-      const lon = payload.lon ?? NaN;
-      const sourceLabel = "";
 
       const response = await fetch("/api/nearby-shops", {
         method: "POST",
@@ -207,7 +204,13 @@ export default function NearbyShopGuide({
           radius,
         }),
       });
-      const data = (await response.json()) as { items?: ShopItem[]; source?: string | null; provider?: SearchProvider; error?: string };
+      const data = (await response.json()) as {
+        items?: ShopItem[];
+        source?: string | null;
+        provider?: SearchProvider;
+        error?: string;
+        debug?: { googleTried: boolean; googleErrorCode: number | null; googleErrorMsg: string | null; osmErrorCode: number | null };
+      };
       if (!response.ok) {
         const reason = data.error ? ` (${data.error})` : ` (${response.status})`;
         throw new Error(source === "area"
@@ -220,9 +223,18 @@ export default function NearbyShopGuide({
       setProvider(data.provider ?? null);
 
       if (nextItems.length === 0) {
+        const d = data.debug;
+        let hint = "";
+        if (d) {
+          if (d.googleErrorCode === 403) hint = t(" (Google Places API制限)", " (Google Places API restricted)");
+          else if (d.googleErrorCode === 401) hint = t(" (Google APIキー無効)", " (Google API key invalid)");
+          else if (d.googleErrorCode) hint = ` (Google ${d.googleErrorCode})`;
+          if (d.osmErrorCode) hint += t(` / OSM ${d.osmErrorCode}`, ` / OSM ${d.osmErrorCode}`);
+          if (!d.googleTried && d.osmErrorCode === null) hint = t(" (OSMで検索しましたが0件)", " (OSM returned 0 results)");
+        }
         setStatus(source === "area"
-          ? t("このエリアでは候補が見つかりませんでした。別の地名や自由入力も試してみてください。", "No results found. Try another area or keyword.")
-          : t("現在地の近くでは候補が見つかりませんでした。", "No nearby results found."));
+          ? t(`このエリアでは候補が見つかりませんでした。別の地名や自由入力も試してみてください。${hint}`, `No results found. Try another area or keyword.${hint}`)
+          : t(`現在地の近くでは候補が見つかりませんでした。${hint}`, `No nearby results found.${hint}`));
         return;
       }
       setStatus(source === "area"
