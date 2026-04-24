@@ -117,11 +117,10 @@
 
 検索仕様:
 
-- エリア入力時はサーバーで Nominatim（OpenStreetMap）を使いジオコーディングを実行
-- 店舗検索はブラウザから Overpass API（OpenStreetMap）を直接呼び出す
+- エリア入力時はサーバーで Google Geocoding API（または Nominatim フォールバック）でジオコーディング
+- 店舗検索は Google Places API を優先し、失敗時は Overpass API（OSM）へ自動フォールバック
 - 近い順に 6 件まで返却
 - 検索結果は 5 分間クライアントキャッシュ
-- Overpass API 障害時は自動で予備サーバーへ切り替え
 
 エラー仕様:
 

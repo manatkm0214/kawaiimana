@@ -142,14 +142,15 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>セキュリティチェック報告書</h1>
-      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/24 4:33</p>
+      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/24 12:36</p>
     </header>
     <h1>セキュリティチェック報告書</h1>
 <h2>1. 実施概要</h2>
 <ul>
 <li>対象アプリ: かわいい家計簿 / <code>kakeibo-app</code></li>
+<li>本番 URL: <code>https://kawaii0214.vercel.app</code></li>
 <li>実施日: 2026-04-24（最終更新: 2026-04-24）</li>
-<li>実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認</li>
+<li>実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認、本番 URL 確認</li>
 </ul>
 <h2>2. 数値サマリー</h2>
 <ul>
@@ -238,6 +239,7 @@ src/app/api/auth/send-email/route.ts</code></pre>
 <li><code>rateLimit</code> は全 <code>POST</code> API に一律ではないため、将来的には対象拡大の余地あり</li>
 <li>Auth0 の <code>dpopUtils.js</code> に起因する build warning は依存側の挙動で、現状は機能阻害なし</li>
 <li>今回は静的検査とビルド検証が中心であり、外部からの動的ペネトレーションテストまでは未実施</li>
+<li>LINE / Google OAuth の Callback URL は本番 URL に合わせて各開発者コンソールへ登録が必要</li>
 </ul>
 <h2>7. 総合判定</h2>
 <ul>
