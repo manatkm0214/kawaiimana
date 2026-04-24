@@ -139,20 +139,20 @@ External Services
 処理フロー:
 
 1. 画面で店種、エリア、自由入力キーワードを指定
-2. エリア入力時: サーバー API に送信 → Nominatim でジオコーディング → 座標を返却
-3. 現在地使用時: ブラウザの Geolocation API で座標を取得
-4. ブラウザから Overpass API を直接呼び出し周辺店舗を検索
-5. 距離順に最大 6 件へ整形し表示
-6. 同一条件の結果は 5 分間クライアントキャッシュ
+2. エリア入力時: `/api/nearby-shops` に送信 → Google Geocoding API（失敗時は Nominatim）でジオコーディング
+3. 現在地使用時: ブラウザの Geolocation API で座標を取得 → `/api/nearby-shops` に送信
+4. サーバーで Google Places API（New）を呼び出し（`GOOGLE_MAPS_API_KEY` 設定時）
+5. Google が失敗または 0 件の場合、サーバーから Overpass API（OSM）でフォールバック検索
+6. 距離順に最大 6 件へ整形し表示
+7. 0 件時はエラーコードと検索座標を診断情報としてレスポンスに付与し UI に表示
 
 設計意図:
 
-- サーバーは認証・レート制限・ジオコーディングのみ担当
-- Overpass 検索をブラウザ側で実行することでサーバーのタイムアウト制限を回避
-- Google Maps API が有効な場合は優先して使用し、失敗時は OSM へ自動フォールバック
+- サーバーが認証・レート制限・ジオコーディング・店舗検索をすべて担当
+- Google Maps API が有効な場合は優先して使用し、失敗または 0 件時は OSM へ自動フォールバック
 - OSM（Nominatim / Overpass）は無料・APIキー不要で常に予備として機能
-- Overpass 障害時は予備サーバーへ自動切り替え
-- エラー時はユーザーが原因を理解しやすい文言を返す
+- Overpass 障害時は予備エンドポイント（overpass.kumi.systems）へ自動切り替え
+- 0 件時は Google/OSM のエラーコードと検索座標を診断情報として返し、原因の特定を容易にする
 
 ## 8. デプロイ設計
 

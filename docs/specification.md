@@ -118,9 +118,10 @@
 検索仕様:
 
 - エリア入力時はサーバーで Google Geocoding API（または Nominatim フォールバック）でジオコーディング
-- 店舗検索は Google Places API を優先し、失敗時は Overpass API（OSM）へ自動フォールバック
+- 店舗検索は Google Places API（New）を優先し、失敗または 0 件の場合は Overpass API（OSM）へ自動フォールバック
+- Overpass 障害時は予備エンドポイント（overpass.kumi.systems）へ自動切り替え
 - 近い順に 6 件まで返却
-- 検索結果は 5 分間クライアントキャッシュ
+- 0 件時はエラーコードと検索座標を診断情報としてレスポンスに含む
 
 エラー仕様:
 
