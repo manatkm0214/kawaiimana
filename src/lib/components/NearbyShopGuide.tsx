@@ -197,23 +197,27 @@ export default function NearbyShopGuide({
       let lon = payload.lon ?? NaN;
       let sourceLabel = "";
 
-      if (payload.area) {
-        const response = await fetch("/api/nearby-shops", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ area: payload.area }),
-        });
-        const data = (await response.json()) as { lat?: number; lon?: number; source?: string | null; error?: string };
-        if (!response.ok) {
-          throw new Error(data.error ?? t("エリアが見つかりませんでした。", "Area not found."));
-        }
-        lat = data.lat ?? NaN;
-        lon = data.lon ?? NaN;
-        sourceLabel = data.source ?? payload.area;
+      const response = await fetch("/api/nearby-shops", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          kind,
+          customQuery: customQuery.trim() || undefined,
+          radius,
+        }),
+      });
+      const data = (await response.json()) as { items?: ShopItem[]; source?: string | null; provider?: SearchProvider; error?: string };
+      if (!response.ok) {
+        const reason = data.error ? ` (${data.error})` : ` (${response.status})`;
+        throw new Error(source === "area"
+          ? t(`このエリアからお店を探せませんでした。${reason}`, `Could not find places from that area.${reason}`)
+          : t(`近くのお店を取得できませんでした。${reason}`, `Could not fetch nearby places.${reason}`));
       }
 
-      const nextItems = await searchOverpass(lat, lon, radius, kind, customQuery.trim());
+      const nextItems = data.items ?? [];
       setShops(nextItems);
+      setProvider(data.provider ?? null);
 
       if (nextItems.length === 0) {
         setStatus(source === "area"
@@ -222,7 +226,7 @@ export default function NearbyShopGuide({
         return;
       }
       setStatus(source === "area"
-        ? t(`「${sourceLabel}」周辺のお店を表示しています。`, `Showing places around ${sourceLabel}.`)
+        ? t(`「${data.source || area}」周辺のお店を表示しています。`, `Showing places around ${data.source || area}.`)
         : t("現在地の近くのお店を表示しています。", "Showing places near your current location."));
     } catch (error) {
       setShops([]);

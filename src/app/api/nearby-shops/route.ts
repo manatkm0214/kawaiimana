@@ -482,14 +482,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "invalid custom query" }, { status: 400 });
     }
 
-    if ((!Number.isFinite(lat) || !Number.isFinite(lon)) && area) {
-      const osmGeocoded = await geocodeAreaWithOsm(area);
-      if (osmGeocoded) {
-        lat = osmGeocoded.lat;
-        lon = osmGeocoded.lon;
-        sourceLabel = osmGeocoded.label;
-      }
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
+    if ((!Number.isFinite(lat) || !Number.isFinite(lon)) && area) {
+      if (apiKey) {
+        const googleGeocoded = await geocodeAreaWithGoogle(area, apiKey);
+        if (googleGeocoded && !("apiError" in googleGeocoded)) {
+          lat = googleGeocoded.lat;
+          lon = googleGeocoded.lon;
+          sourceLabel = googleGeocoded.label;
+        }
+      }
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        const osmGeocoded = await geocodeAreaWithOsm(area);
+        if (osmGeocoded) { lat = osmGeocoded.lat; lon = osmGeocoded.lon; sourceLabel = osmGeocoded.label; }
+      }
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
         return NextResponse.json({ error: "エリアが見つかりませんでした。別の地名を試してください。" }, { status: 404 });
       }
@@ -499,8 +506,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "lat/lon or area required" }, { status: 400 });
     }
 
-    // ジオコーディングのみサーバーで行い、Overpass検索はブラウザ側で実行
-    return NextResponse.json({ lat, lon, source: sourceLabel || null });
+    const radius = Number.isFinite(body.radius) ? Math.min(Math.max(Number(body.radius), 300), 5000) : 1600;
+    const allowedKinds: PlaceKind[] = ["budget","grocery","clothes","daily","home","drugstore","electronics","cafe","restaurant","beauty","bookstore","sports","baby"];
+    const kind = allowedKinds.includes(body.kind as PlaceKind) ? (body.kind as PlaceKind) : "budget";
+
+    let items: NearbyItem[] = [];
+    let provider: SearchProvider = "osm";
+
+    if (apiKey) {
+      const googleResult = customQuery
+        ? await searchByTextWithGoogle(customQuery, lat, lon, radius, apiKey)
+        : await searchNearbyWithGoogle(lat, lon, radius, kind, apiKey);
+      if (!("apiError" in googleResult)) {
+        items = mapGooglePlacesToItems(lat, lon, kind, googleResult);
+        provider = "google";
+      }
+    }
+
+    if (items.length === 0) {
+      const osmResult = await searchWithOsm(lat, lon, radius, kind, customQuery || undefined);
+      if (!("apiError" in osmResult)) { items = osmResult; provider = "osm"; }
+    }
+
+    return NextResponse.json({ items, source: sourceLabel || null, provider });
   } catch (e) {
     console.error("[nearby-shops] unexpected error:", e);
     return NextResponse.json({ error: "failed to fetch nearby shops" }, { status: 500 });
