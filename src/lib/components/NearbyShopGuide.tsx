@@ -1,11 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useRef, useState } from "react";
-
-type CacheEntry = { items: ShopItem[]; ts: number };
-const shopCache = new Map<string, CacheEntry>();
-const CACHE_TTL = 5 * 60 * 1000;
+import { useMemo, useState } from "react";
 import { formatCurrency, type Transaction } from "@/lib/utils";
 import { useLang } from "@/lib/hooks/useLang";
 import type { LifestyleSuggestion } from "./FoodLifestyleAssistant";
@@ -113,79 +109,6 @@ export default function NearbyShopGuide({
     );
   })();
 
-  const kindToOsmTags: Record<ShopKind, Array<[string, string]>> = {
-    budget:      [["shop", "supermarket"], ["shop", "convenience"]],
-    grocery:     [["shop", "supermarket"], ["shop", "greengrocer"]],
-    clothes:     [["shop", "clothes"]],
-    daily:       [["shop", "convenience"], ["shop", "variety_store"]],
-    home:        [["shop", "houseware"], ["shop", "furniture"], ["shop", "doityourself"]],
-    drugstore:   [["shop", "chemist"], ["amenity", "pharmacy"]],
-    electronics: [["shop", "electronics"]],
-    cafe:        [["amenity", "cafe"]],
-    restaurant:  [["amenity", "restaurant"], ["amenity", "fast_food"]],
-    beauty:      [["shop", "hairdresser"], ["shop", "beauty"]],
-    bookstore:   [["shop", "books"]],
-    sports:      [["shop", "sports"]],
-    baby:        [["shop", "toys"], ["shop", "baby_goods"]],
-  };
-
-  function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-    const rad = (v: number) => (v * Math.PI) / 180;
-    const dLat = rad(lat2 - lat1), dLon = rad(lon2 - lon1);
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2;
-    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  async function searchOverpass(lat: number, lon: number, radius: number, cKind: ShopKind, cQuery: string): Promise<ShopItem[]> {
-    const cacheKey = `${lat.toFixed(3)},${lon.toFixed(3)},${radius},${cKind},${cQuery}`;
-    const cached = shopCache.get(cacheKey);
-    if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.items;
-    const r = Math.min(radius, 2000);
-    let selectors: string[];
-    if (cQuery.trim()) {
-      const esc = cQuery.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      selectors = [
-        `node(around:${r},${lat},${lon})["name"~"${esc}",i]`,
-        `way(around:${r},${lat},${lon})["name"~"${esc}",i]`,
-      ];
-    } else {
-      selectors = kindToOsmTags[cKind].flatMap(([k, v]) => [
-        `node(around:${r},${lat},${lon})["${k}"="${v}"]`,
-        `way(around:${r},${lat},${lon})["${k}"="${v}"]`,
-      ]);
-    }
-    const query = `[out:json][timeout:20];(${selectors.join(";")};);out center tags 8;`;
-    const endpoints = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
-    for (const ep of endpoints) {
-      try {
-        const res = await fetch(`${ep}?data=${encodeURIComponent(query)}`);
-        if (!res.ok) { console.warn("[overpass] failed:", ep, res.status); continue; }
-        const data = (await res.json()) as { elements?: Array<{ id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }> };
-        const items = (data.elements ?? [])
-          .filter(e => e.tags?.name && (e.lat != null || e.center != null))
-          .map(e => {
-            const eLat = e.lat ?? e.center!.lat;
-            const eLon = e.lon ?? e.center!.lon;
-            return {
-              id: String(e.id),
-              name: e.tags!.name!,
-              kind: e.tags?.shop ?? e.tags?.amenity ?? cKind,
-              distanceKm: distanceKm(lat, lon, eLat, eLon),
-              lat: eLat,
-              lng: eLon,
-              address: [e.tags?.["addr:city"], e.tags?.["addr:street"]].filter(Boolean).join(" "),
-              placeId: "",
-            };
-          })
-          .sort((a, b) => a.distanceKm - b.distanceKm)
-          .slice(0, 6);
-        shopCache.set(cacheKey, { items, ts: Date.now() });
-        return items;
-      } catch (e) { console.warn("[overpass] error:", ep, e); continue; }
-    }
-    throw new Error(t("周辺のお店情報を取得できませんでした。時間をおいて再試行してください。", "Could not fetch nearby shops. Please try again later."));
-  }
-
   async function loadShops(payload: { lat?: number; lon?: number; area?: string }, source: "area" | "current") {
     setLoading(true);
     setStatus("");
@@ -209,7 +132,7 @@ export default function NearbyShopGuide({
         source?: string | null;
         provider?: SearchProvider;
         error?: string;
-        debug?: { googleTried: boolean; googleErrorCode: number | null; googleErrorMsg: string | null; osmErrorCode: number | null };
+        debug?: { lat: number; lon: number; radius: number; googleTried: boolean; googleErrorCode: number | null; googleErrorMsg: string | null; osmErrorCode: number | null };
       };
       if (!response.ok) {
         const reason = data.error ? ` (${data.error})` : ` (${response.status})`;
@@ -229,8 +152,8 @@ export default function NearbyShopGuide({
           if (d.googleErrorCode === 403) hint = t(" (Google Places API制限)", " (Google Places API restricted)");
           else if (d.googleErrorCode === 401) hint = t(" (Google APIキー無効)", " (Google API key invalid)");
           else if (d.googleErrorCode) hint = ` (Google ${d.googleErrorCode})`;
-          if (d.osmErrorCode) hint += t(` / OSM ${d.osmErrorCode}`, ` / OSM ${d.osmErrorCode}`);
-          if (!d.googleTried && d.osmErrorCode === null) hint = t(" (OSMで検索しましたが0件)", " (OSM returned 0 results)");
+          if (d.osmErrorCode) hint += ` / OSM ${d.osmErrorCode}`;
+          if (hint === "") hint = ` [lat:${d.lat?.toFixed(3)},lon:${d.lon?.toFixed(3)} r:${d.radius}m]`;
         }
         setStatus(source === "area"
           ? t(`このエリアでは候補が見つかりませんでした。別の地名や自由入力も試してみてください。${hint}`, `No results found. Try another area or keyword.${hint}`)

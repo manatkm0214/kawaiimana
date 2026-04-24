@@ -101,15 +101,6 @@ async function readGoogleError(response: Response, label: string): Promise<Googl
   }
 }
 
-function googleErrorMessage(error: GoogleApiError, context: "places" | "geocode") {
-  if (error.reason === "API_KEY_INVALID" || (typeof error.message === "string" && /api key expired/i.test(error.message))) {
-    return "Google Maps APIキーが無効です。";
-  }
-  if (error.apiError === 403) {
-    return context === "geocode" ? "Geocoding APIが制限されています。" : "Places APIが制限されています。";
-  }
-  return `Google Maps APIエラー (${error.apiError})`;
-}
 
 async function geocodeAreaWithGoogle(
   area: string,
@@ -529,6 +520,9 @@ export async function POST(req: NextRequest) {
     }
 
     const debug = items.length === 0 ? {
+      lat,
+      lon,
+      radius,
       googleTried: !!apiKey,
       googleErrorCode: googleError?.apiError ?? null,
       googleErrorMsg: googleError?.message ?? null,
