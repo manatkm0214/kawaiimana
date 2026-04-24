@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>かわいい家計簿 — プロジェクト文書一式</title>
+  <style>
+    @page { size: A4; margin: 16mm; }
+
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #52607a;
+      --line: #d6dde8;
+      --paper: #ffffff;
+      --accent: #0f766e;
+      --accent-soft: #ecfeff;
+      --code: #0f172a;
+      --code-bg: #f8fafc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+      color: var(--ink);
+      background: #f8fafc;
+    }
+
+    main {
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--paper);
+    }
+
+    /* Cover page */
+    .cover {
+      padding: 40mm 18mm 30mm;
+      min-height: 200mm;
+      border-bottom: 3px solid var(--accent);
+      page-break-after: always;
+    }
+
+    .cover-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin: 0 0 20px;
+    }
+
+    .cover-title {
+      margin: 0 0 12px;
+      font-size: 34px;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .cover-meta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* TOC */
+    .toc {
+      padding: 24mm 18mm;
+      page-break-after: always;
+    }
+
+    .toc h2 {
+      font-size: 18px;
+      margin: 0 0 20px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .toc ol {
+      margin: 0;
+      padding: 0 0 0 22px;
+      list-style: decimal;
+    }
+
+    .toc li {
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* Sections */
+    .doc-section {
+      padding: 22mm 18mm;
+      page-break-before: always;
+    }
+
+    .section-eyebrow {
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--accent-soft);
+      line-height: 1;
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+      color: #cffafe;
+    }
+
+    .section-title {
+      margin: 0 0 4px;
+      font-size: 28px;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .section-rule {
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      margin: 10px 0 24px;
+      border-radius: 2px;
+    }
+
+    h1, h2, h3, h4, h5, h6 { color: #0f172a; line-height: 1.3; page-break-after: avoid; }
+
+    h1 { margin-top: 28px; font-size: 22px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+    h2 { margin-top: 24px; font-size: 18px; }
+    h3 { margin-top: 20px; font-size: 15px; }
+
+    p, li { font-size: 14px; line-height: 1.85; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 10px 22px; padding: 0; }
+    li + li { margin-top: 4px; }
+
+    code {
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 0.92em;
+      background: var(--code-bg);
+      color: var(--code);
+      padding: 0.15em 0.35em;
+      border-radius: 6px;
+    }
+
+    pre {
+      overflow: hidden;
+      margin: 16px 0;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--code-bg);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    pre code { background: transparent; padding: 0; border-radius: 0; }
+    a { color: #0f766e; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="cover">
+      <p class="cover-eyebrow">Kakeibo App — Project Documents</p>
+      <h1 class="cover-title">かわいい家計簿<br>プロジェクト文書一式</h1>
+      <p class="cover-meta">本番 URL: https://kawaii0214.vercel.app | 生成日時: 2026/04/24 23:37</p>
+    </div>
+
+    <div class="toc">
+      <h2>目次</h2>
+      <ol>
+<li><a href="#section-1">仕様書</a></li>
+<li><a href="#section-2">設計書</a></li>
+<li><a href="#section-3">取扱説明書</a></li>
+<li><a href="#section-4">セキュリティチェック報告書</a></li>
+      </ol>
+    </div>
+
+    
+<section id="section-1" class="doc-section">
+  <div class="section-eyebrow">01</div>
+  <h1 class="section-title">仕様書</h1>
+  <div class="section-rule"></div>
+  <h1>仕様書</h1>
+<h2>1. 目的</h2>
+<p>家計の入力から分析、予算調整、生活支援までを一元化し、日々の意思決定を支援する。</p>
+<h2>2. 想定利用者</h2>
+<ul>
+<li>個人の家計を管理したいユーザー</li>
+<li>生活費、固定費、貯蓄、投資のバランスを見たいユーザー</li>
+<li>AI に相談しながら家計改善を進めたいユーザー</li>
+</ul>
+<h2>3. 提供機能</h2>
+<h3>3.1 家計入力</h3>
+<ul>
+<li>収入 / 支出 / 貯蓄 / 投資の登録</li>
+<li>カテゴリ、日付、固定費フラグ、メモ入力</li>
+<li>最近の入力履歴の参照</li>
+</ul>
+<h3>3.2 ダッシュボード</h3>
+<ul>
+<li>当月収支</li>
+<li>カテゴリ別集計</li>
+<li>予算消化率</li>
+<li>安全度 / 生活レベル</li>
+<li>固定費見直し候補</li>
+</ul>
+<h3>3.3 予算管理</h3>
+<ul>
+<li>配分プリセット適用</li>
+<li>予算超過 / 余剰の確認</li>
+<li>トレードオフ提案</li>
+<li>引き落とし予約の記録</li>
+</ul>
+<h3>3.4 AI 機能</h3>
+<ul>
+<li>AI 分析</li>
+<li>AI 節約アドバイス</li>
+<li>AI チャット相談</li>
+<li>AI 生活支援</li>
+<li>AI 店案内</li>
+</ul>
+<h3>3.5 認証</h3>
+<ul>
+<li>Google ログイン</li>
+<li>LINE ログイン</li>
+<li>メール系認証</li>
+<li>ログアウト</li>
+</ul>
+<h3>3.6 その他</h3>
+<ul>
+<li>問い合わせ送信</li>
+<li>設定変更</li>
+<li>法務ページ表示</li>
+<li>PDF 出力</li>
+</ul>
+<h2>4. 画面仕様</h2>
+<h3>4.1 ホーム</h3>
+<ul>
+<li>ログイン前導線</li>
+<li>ニックネーム / 初期導線</li>
+<li>認証開始</li>
+</ul>
+<h3>4.2 ダッシュボード</h3>
+<ul>
+<li>入力、ボード、カレンダー、目標、AI、年次、基準、シニア、こどもを切替</li>
+</ul>
+<h3>4.3 設定</h3>
+<ul>
+<li>デザイン設定</li>
+<li>アカウント設定</li>
+</ul>
+<h3>4.4 問い合わせ</h3>
+<ul>
+<li>名前、メール、件名、本文を送信</li>
+</ul>
+<h2>5. API 仕様</h2>
+<p>代表 API:</p>
+<ul>
+<li><code>/api/transactions</code></li>
+<li><code>/api/profile</code></li>
+<li><code>/api/preset</code></li>
+<li><code>/api/budget-surplus</code></li>
+<li><code>/api/budget-tradeoff</code></li>
+<li><code>/api/debit-reservations</code></li>
+<li><code>/api/ai</code></li>
+<li><code>/api/ai/chat</code></li>
+<li><code>/api/nearby-shops</code></li>
+<li><code>/api/contact</code></li>
+</ul>
+<p>共通仕様:</p>
+<ul>
+<li>JSON リクエスト</li>
+<li>認証必須 API は Auth0 セッションを確認</li>
+<li>更新系 API は same-origin を要求</li>
+<li>一部 API は rate limit 付き</li>
+</ul>
+<h2>6. AI 店案内仕様</h2>
+<p>入力:</p>
+<ul>
+<li>現在地またはエリア文字列</li>
+<li>店種</li>
+<li>自由入力キーワード</li>
+<li>半径</li>
+</ul>
+<p>出力:</p>
+<ul>
+<li>店舗名</li>
+<li>住所</li>
+<li>距離</li>
+<li>緯度経度</li>
+<li>地図遷移リンク</li>
+</ul>
+<p>検索仕様:</p>
+<ul>
+<li>エリア入力時はサーバーで Google Geocoding API（または Nominatim フォールバック）でジオコーディング</li>
+<li>店舗検索は Google Places API（New）を優先し、失敗または 0 件の場合は Overpass API（OSM）へ自動フォールバック</li>
+<li>Overpass 障害時は予備エンドポイント（overpass.kumi.systems）へ自動切り替え</li>
+<li>近い順に 6 件まで返却</li>
+<li>0 件時はエラーコードと検索座標を診断情報としてレスポンスに含む</li>
+</ul>
+<p>エラー仕様:</p>
+<ul>
+<li>エリア不明時は <code>404</code></li>
+<li>ジオコーディング失敗時は <code>502</code></li>
+<li>不正入力時は <code>400</code></li>
+</ul>
+<h2>7. セキュリティ仕様</h2>
+<ul>
+<li>認証済みユーザーのみ個人データを更新可能</li>
+<li>same-origin 対象 API は cross-site 送信を拒否</li>
+<li>rate limit 対象 API は短時間の多重送信を制限</li>
+<li>外部向け webhook は署名検証を必須化</li>
+</ul>
+<h2>8. 品質基準</h2>
+<p>リリース前に満たす基準:</p>
+<ul>
+<li><code>eslint</code> エラー 0</li>
+<li>TypeScript エラー 0</li>
+<li><code>next build</code> 成功</li>
+<li>重大なハードコード秘密情報 0</li>
+</ul>
+<h2>9. 運用ルール</h2>
+<ul>
+<li>実シークレットは Git に含めない</li>
+<li><code>.env.local</code> と Vercel 環境変数を分離する</li>
+<li>DB migration は明示的に適用する</li>
+</ul>
+</section>
+
+<section id="section-2" class="doc-section">
+  <div class="section-eyebrow">02</div>
+  <h1 class="section-title">設計書</h1>
+  <div class="section-rule"></div>
+  <h1>設計書</h1>
+<h2>1. システム概要</h2>
+<p>本システムは、家計の記録、分析、予算管理、AI 支援を 1 つの Web アプリで提供する Next.js ベースの家計簿です。 フロントエンドと API を同一リポジトリの App Router で管理し、データは Supabase、認証は Auth0、配信は Vercel を利用します。</p>
+<h2>2. 全体構成</h2>
+<pre><code class="language-text">Browser
+  ├─ App Router UI
+  ├─ Dashboard / Input / Settings / Contact
+  └─ Fetch to /api/*
+
+Next.js App Router
+  ├─ src/app/*                画面
+  ├─ src/app/api/*            API Route Handlers
+  ├─ src/lib/components/*     UI コンポーネント
+  ├─ src/lib/auth/*           認証連携
+  ├─ src/lib/server/*         セキュリティ / サーバーユーティリティ
+  └─ src/lib/supabase/*       DB アクセス
+
+External Services
+  ├─ Supabase                 profiles / transactions / budgets
+  ├─ Auth0                    Google / LINE / メール認証
+  ├─ OpenAI / Gemini 等       AI 機能
+  ├─ Google Maps API          周辺店舗検索 / Geocoding（優先）
+  ├─ Nominatim (OSM)          エリアジオコーディング（フォールバック）
+  ├─ Overpass API (OSM)       周辺店舗検索（フォールバック）
+  ├─ Resend                   メール送信
+  └─ Vercel                   Hosting / Build / Deploy</code></pre>
+<h2>3. レイヤ設計</h2>
+<h3>3.1 Presentation Layer</h3>
+<ul>
+<li><code>src/app/</code></li>
+<li><code>src/lib/components/</code></li>
+</ul>
+<p>役割:</p>
+<ul>
+<li>家計入力画面、ダッシュボード、設定、法務ページ、問い合わせページを表示</li>
+<li>API 呼び出し結果を反映</li>
+<li>一部 UI 状態をローカルストレージに保持</li>
+</ul>
+<h3>3.2 Application Layer</h3>
+<ul>
+<li><code>src/app/api/</code></li>
+</ul>
+<p>役割:</p>
+<ul>
+<li>認証済みユーザーのリクエストを受けて入力検証を実行</li>
+<li>same-origin、rate limit、認可を通した上で業務処理を実行</li>
+<li>外部 API と DB の橋渡しを行う</li>
+</ul>
+<h3>3.3 Domain / Utility Layer</h3>
+<ul>
+<li><code>src/lib/utils.ts</code></li>
+<li><code>src/lib/fixed-cost-flags.ts</code></li>
+<li><code>src/lib/components/*</code> 内の計算ロジック</li>
+</ul>
+<p>役割:</p>
+<ul>
+<li>家計サマリー、予算差分、固定費判定、生活支援ロジックの計算</li>
+</ul>
+<h3>3.4 Infrastructure Layer</h3>
+<ul>
+<li><code>src/lib/supabase/admin.ts</code></li>
+<li><code>src/lib/auth0.ts</code></li>
+<li><code>src/lib/server/security.ts</code></li>
+<li><code>src/lib/server/ssrf.ts</code></li>
+</ul>
+<p>役割:</p>
+<ul>
+<li>Supabase 管理クライアント</li>
+<li>Auth0 セッション処理</li>
+<li>JSON 読み取り制限、same-origin、rate limit</li>
+<li>SSRF 対策</li>
+</ul>
+<h2>4. データ設計</h2>
+<p>主要テーブル:</p>
+<ul>
+<li><code>profiles</code></li>
+<li><code>transactions</code></li>
+<li><code>budgets</code></li>
+</ul>
+<p>補助データ:</p>
+<ul>
+<li>予算差額</li>
+<li>予算トレードオフ</li>
+<li>引き落とし予約</li>
+</ul>
+<p>基本方針:</p>
+<ul>
+<li>ユーザー単位でデータを分離</li>
+<li>Supabase の RLS を前提にする</li>
+<li>サーバー側では Auth0 セッションから解決した <code>supabaseUserId</code> を利用して書き込み対象を固定する</li>
+</ul>
+<h2>5. 認証設計</h2>
+<p>認証方式:</p>
+<ul>
+<li>Auth0 セッション認証</li>
+<li>Google OAuth</li>
+<li>LINE Login</li>
+<li>メール系ログイン / 確認フロー</li>
+</ul>
+<p>設計ポイント:</p>
+<ul>
+<li>画面系は Auth0 セッション前提</li>
+<li>API はセッション確認と same-origin を併用</li>
+<li>webhook 系 API は same-origin ではなく署名検証で保護</li>
+</ul>
+<h2>6. セキュリティ設計</h2>
+<p>実装済みの主要制御:</p>
+<ul>
+<li><code>requireSameOrigin</code> による CSRF 軽減</li>
+<li><code>rateLimit</code> による濫用抑制</li>
+<li><code>readJsonBody</code> によるサイズ制限つき JSON 読み取り</li>
+<li><code>boundedText</code> による入力長制限</li>
+<li>webhook の JWT / 署名検証</li>
+<li>SSRF 対策ユーティリティ</li>
+</ul>
+<p>今回の補強:</p>
+<ul>
+<li><code>src/app/api/profile/route.ts</code> に same-origin と rate limit を追加</li>
+</ul>
+<h2>7. AI 店案内設計</h2>
+<p>対象:</p>
+<ul>
+<li><code>src/lib/components/NearbyShopGuide.tsx</code></li>
+<li><code>src/app/api/nearby-shops/route.ts</code></li>
+</ul>
+<p>処理フロー:</p>
+<ol>
+<li>画面で店種、エリア、自由入力キーワードを指定</li>
+<li>エリア入力時: <code>/api/nearby-shops</code> に送信 → Google Geocoding API（失敗時は Nominatim）でジオコーディング</li>
+<li>現在地使用時: ブラウザの Geolocation API で座標を取得 → <code>/api/nearby-shops</code> に送信</li>
+<li>サーバーで Google Places API（New）を呼び出し（<code>GOOGLE_MAPS_API_KEY</code> 設定時）</li>
+<li>Google が失敗または 0 件の場合、サーバーから Overpass API（OSM）でフォールバック検索</li>
+<li>距離順に最大 6 件へ整形し表示</li>
+<li>0 件時はエラーコードと検索座標を診断情報としてレスポンスに付与し UI に表示</li>
+</ol>
+<p>設計意図:</p>
+<ul>
+<li>サーバーが認証・レート制限・ジオコーディング・店舗検索をすべて担当</li>
+<li>Google Maps API が有効な場合は優先して使用し、失敗または 0 件時は OSM へ自動フォールバック</li>
+<li>OSM（Nominatim / Overpass）は無料・APIキー不要で常に予備として機能</li>
+<li>Overpass 障害時は予備エンドポイント（overpass.kumi.systems）へ自動切り替え</li>
+<li>0 件時は Google/OSM のエラーコードと検索座標を診断情報として返し、原因の特定を容易にする</li>
+</ul>
+<h2>8. デプロイ設計</h2>
+<p>環境:</p>
+<ul>
+<li>ローカル開発</li>
+<li>Vercel Preview</li>
+<li>Vercel Production</li>
+</ul>
+<p>本番 URL: <code>https://kawaii0214.vercel.app</code></p>
+<p>デプロイ方針:</p>
+<ul>
+<li>Git push → main ブランチ → Vercel 自動デプロイ</li>
+<li>本番環境変数は Vercel 管理</li>
+<li><code>.env.local</code> はローカル専用</li>
+</ul>
+<h2>9. 非機能要件</h2>
+<ul>
+<li>TypeScript による型安全</li>
+<li>ESLint による静的検証</li>
+<li>Next.js build 通過をリリース基準にする</li>
+<li>セキュリティ境界を API 側で強制する</li>
+</ul>
+<h2>10. 今後の改善候補</h2>
+<ul>
+<li>API ごとの rate limit 方針を明文化</li>
+<li>監査ログの追加</li>
+<li>README と docs の多言語整理</li>
+<li>AI 店案内の監視指標追加</li>
+</ul>
+</section>
+
+<section id="section-3" class="doc-section">
+  <div class="section-eyebrow">03</div>
+  <h1 class="section-title">取扱説明書</h1>
+  <div class="section-rule"></div>
+  <h1>取り扱い説明書</h1>
+<h2>1. はじめに</h2>
+<p>このアプリは、収支の記録、予算管理、AI 相談、生活支援をまとめて行う家計簿です。</p>
+<h2>2. ログイン方法</h2>
+<p>利用できるログイン方法:</p>
+<ul>
+<li>Google</li>
+<li>LINE</li>
+<li>メール</li>
+</ul>
+<p>ログイン後はホームからダッシュボードへ進みます。</p>
+<h2>3. 基本的な使い方</h2>
+<h3>3.1 収支を入力する</h3>
+<ol>
+<li>入力タブを開く</li>
+<li>種別を選ぶ</li>
+<li>金額、日付、カテゴリを入力する</li>
+<li>必要に応じてメモや固定費設定を入れる</li>
+<li>保存する</li>
+</ol>
+<h3>3.2 ダッシュボードを見る</h3>
+<p>確認できる内容:</p>
+<ul>
+<li>当月の収支</li>
+<li>予算との差</li>
+<li>カテゴリごとの使い方</li>
+<li>固定費見直し候補</li>
+<li>安全度と生活レベル</li>
+</ul>
+<h3>3.3 予算を設定する</h3>
+<ol>
+<li>プリセット設定を開く</li>
+<li>収入や配分を入力する</li>
+<li>固定費、変動費、貯蓄、投資の割合を決める</li>
+<li>保存してダッシュボードに反映する</li>
+</ol>
+<h2>4. AI 機能の使い方</h2>
+<h3>4.1 AI 分析</h3>
+<ul>
+<li>家計の状態を文章で確認したいときに使います</li>
+</ul>
+<h3>4.2 AI チャット</h3>
+<ul>
+<li>家計について質問したいときに使います</li>
+</ul>
+<h3>4.3 AI 店案内</h3>
+<ol>
+<li>店種を選ぶ</li>
+<li>エリアを入力するか、現在地検索を使う</li>
+<li>必要なら自由入力キーワードを入れる</li>
+<li>検索結果の一覧と地図を確認する</li>
+</ol>
+<p>使いどころ:</p>
+<ul>
+<li>食料品や日用品の買い物先を探したいとき</li>
+<li>生活圏の候補店を整理したいとき</li>
+<li>予算に合わせて買い物先を絞りたいとき</li>
+</ul>
+<h2>5. 設定</h2>
+<p>設定画面では次の内容を変更できます。</p>
+<ul>
+<li>デザイン</li>
+<li>アカウント情報</li>
+<li>一部表示設定</li>
+</ul>
+<h2>6. 問い合わせ</h2>
+<p>問い合わせページから次を入力して送信できます。</p>
+<ul>
+<li>名前</li>
+<li>メールアドレス</li>
+<li>件名</li>
+<li>本文</li>
+</ul>
+<h2>7. よくあるトラブル</h2>
+<h3>ログインできない</h3>
+<ul>
+<li>ブラウザの Cookie を有効にする</li>
+<li>Auth0 / Google / LINE の設定値を確認する</li>
+</ul>
+<h3>現在地で店案内が使えない</h3>
+<ul>
+<li>ブラウザのアドレスバー横のアイコンから位置情報を許可する</li>
+<li>通信状況を確認する</li>
+<li>HTTPS 環境でのみ位置情報が利用可能</li>
+</ul>
+<h3>エリア検索で店が見つからない</h3>
+<ul>
+<li>駅名や市区町村名に変える</li>
+<li>自由入力キーワードを追加する</li>
+<li>時間をおいて再試行する（OpenStreetMap サーバーが混雑している場合あり）</li>
+</ul>
+<h3>周辺のお店情報を取得できない</h3>
+<ul>
+<li>しばらく待ってから再試行する</li>
+<li>別の店種や小さめのエリアで試す</li>
+</ul>
+<h3>保存できない</h3>
+<ul>
+<li>セッション切れの可能性があります。再ログインしてください</li>
+</ul>
+<h2>8. 運用上の注意</h2>
+<ul>
+<li>実データを扱う場合は本番環境変数を必ず設定してください</li>
+<li>シークレットは <code>.env.local</code> または Vercel 環境変数で管理してください</li>
+<li>SQL migration 未適用だと一部機能が正しく動かない場合があります</li>
+</ul>
+</section>
+
+<section id="section-4" class="doc-section">
+  <div class="section-eyebrow">04</div>
+  <h1 class="section-title">セキュリティチェック報告書</h1>
+  <div class="section-rule"></div>
+  <h1>セキュリティチェック報告書</h1>
+<h2>1. 実施概要</h2>
+<ul>
+<li>対象アプリ: かわいい家計簿 / <code>kakeibo-app</code></li>
+<li>本番 URL: <code>https://kawaii0214.vercel.app</code></li>
+<li>実施日: 2026-04-24（最終更新: 2026-04-24）</li>
+<li>実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認、本番 URL 確認</li>
+</ul>
+<h2>2. 数値サマリー</h2>
+<ul>
+<li>セキュリティ総合評価: <code>93%</code></li>
+<li><code>npm audit</code> 脆弱性件数: <code>0</code></li>
+<li>Critical: <code>0</code></li>
+<li>High: <code>0</code></li>
+<li>Moderate: <code>0</code></li>
+<li>Low: <code>0</code></li>
+<li>Git 管理下のハードコード秘密情報検出件数: <code>0</code></li>
+<li>Git 管理下の <code>.env</code> 系ファイル件数: <code>1</code></li>
+<li>管理対象の <code>.env</code> 系ファイル: <code>.env.example</code> のみ</li>
+<li><code>POST</code> API ルート数: <code>17</code></li>
+<li><code>same-origin</code> 防御あり: <code>16 / 17</code> (<code>94.1%</code>)</li>
+<li><code>rateLimit</code> 適用あり: <code>7 / 17</code> (<code>41.2%</code>)</li>
+<li>ビルド失敗件数: <code>0</code></li>
+<li>非ブロッキング build warning 件数: <code>2</code></li>
+</ul>
+<h2>3. 総合評価の算出方法</h2>
+<ul>
+<li>今回の総合評価は、静的検査とビルド検証の結果を 100 点満点で重み付けして算出</li>
+<li>依存脆弱性: <code>30 / 30</code></li>
+<li>シークレット管理: <code>25 / 25</code></li>
+<li>リクエスト起点保護: <code>18.8 / 20</code></li>
+<li>レート制限: <code>4.1 / 10</code></li>
+<li>品質ゲート: <code>15 / 15</code></li>
+<li>合計: <code>92.9 / 100</code> → 四捨五入して <code>93%</code></li>
+</ul>
+<h3>3.1 配点の考え方</h3>
+<ul>
+<li>依存脆弱性は <code>npm audit</code> の結果をそのまま反映し、<code>0 件</code> のため満点</li>
+<li>シークレット管理は Git 管理下のハードコード秘密情報 <code>0 件</code> を満点評価</li>
+<li>リクエスト起点保護は <code>same-origin</code> を基本指標とし、<code>16 / 17</code> のため <code>94.1%</code> を 20 点へ按分</li>
+<li>レート制限は <code>7 / 17</code> の適用率 <code>41.2%</code> を 10 点へ按分</li>
+<li>品質ゲートは ESLint、TypeScript、<code>next build</code> が通過しているため満点</li>
+</ul>
+<h3>3.2 解釈</h3>
+<ul>
+<li><code>93%</code> は「現時点の静的・構成・ビルド観点では高水準だが、追加改善余地あり」という評価</li>
+<li>主な改善余地は <code>rateLimit</code> の適用拡大と、外部からの動的ペネトレーションテスト未実施の 2 点</li>
+</ul>
+<h2>4. 実施コマンド</h2>
+<ul>
+<li><code>npm audit --json</code></li>
+<li><code>./node_modules/.bin/eslint.cmd .</code></li>
+<li><code>node ./node_modules/typescript/bin/tsc --noEmit --pretty false</code></li>
+<li><code>npm run build</code></li>
+<li><code>git grep -n -I -E &quot;(AIza...|sk_live_...|PRIVATE KEY...|AKIA...|ghp_...)&quot; -- .</code></li>
+<li><code>git ls-files .env .env.local .env.example .env.preview.local .vercel</code></li>
+<li>API ルート走査:</li>
+</ul>
+<pre><code class="language-text">POST_ROUTES=17
+SAME_ORIGIN=16
+RATE_LIMITED=7
+MISSING_SAME_ORIGIN:
+src/app/api/auth/send-email/route.ts</code></pre>
+<h2>5. 結果詳細</h2>
+<h3>4.1 依存パッケージ監査</h3>
+<ul>
+<li><code>resend</code> SDK 依存を外し、Resend REST API への直接送信に切り替えた後で <code>npm audit</code> を再実行</li>
+<li>その結果、依存関係由来の既知脆弱性は <code>0 件</code></li>
+<li>現時点での依存数は <code>582</code> で、そのうち production 依存は <code>176</code></li>
+</ul>
+<h3>4.2 シークレット管理</h3>
+<ul>
+<li>Git 管理下ファイルに対する静的スキャンでは、典型的な API キーや秘密鍵のハードコードは検出されず</li>
+<li><code>.env</code>、<code>.env.local</code>、<code>.vercel</code> は Git 管理対象外</li>
+<li>Git 管理下に残っている環境変数ファイルは <code>.env.example</code> のみ</li>
+</ul>
+<h3>4.3 API 防御</h3>
+<ul>
+<li><code>POST</code> を持つ API ルートは <code>17</code></li>
+<li>そのうち <code>16</code> ルートに <code>requireSameOrigin()</code> が入っており、一般的なブラウザ起点の CSRF 対策を実施</li>
+<li><code>7</code> ルートに <code>rateLimit()</code> が入り、短時間連打の抑制を実施</li>
+<li><code>src/app/api/auth/send-email/route.ts</code> は <code>same-origin</code> の代わりに Supabase hook の JWT / 署名検証で保護</li>
+</ul>
+<h3>4.4 品質ゲート</h3>
+<ul>
+<li>ESLint: <code>0</code> errors / <code>0</code> warnings</li>
+<li>TypeScript: <code>0</code> errors</li>
+<li><code>next build</code>: 成功</li>
+<li>ビルド警告は Auth0 依存からの warning が <code>2</code> 件あるが、出荷ブロッカーではない</li>
+</ul>
+<h2>6. 残課題と所見</h2>
+<ul>
+<li><code>rateLimit</code> は全 <code>POST</code> API に一律ではないため、将来的には対象拡大の余地あり</li>
+<li>Auth0 の <code>dpopUtils.js</code> に起因する build warning は依存側の挙動で、現状は機能阻害なし</li>
+<li>今回は静的検査とビルド検証が中心であり、外部からの動的ペネトレーションテストまでは未実施</li>
+<li>LINE / Google OAuth の Callback URL は本番 URL に合わせて各開発者コンソールへ登録が必要</li>
+</ul>
+<h2>7. 総合判定</h2>
+<ul>
+<li>今回の実施範囲では、リポジトリ内の依存脆弱性は <code>0 件</code></li>
+<li>重大な秘密情報の Git 混入も検出されず</li>
+<li>ビルド、型検査、Lint を通過しており、現時点のコードベースはデプロイ可能な状態</li>
+<li>総合評価は <code>93%</code> で、本番運用に耐える状態だが、今後は rate limit の拡張でさらに引き上げ可能</li>
+</ul>
+</section>
+  </main>
+</body>
+</html>
