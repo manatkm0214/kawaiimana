@@ -193,9 +193,9 @@ export default function NearbyShopGuide({
 
     try {
       const radius = kind === "clothes" || kind === "home" || kind === "electronics" ? 2500 : 1800;
-      let lat = payload.lat ?? NaN;
-      let lon = payload.lon ?? NaN;
-      let sourceLabel = "";
+      const lat = payload.lat ?? NaN;
+      const lon = payload.lon ?? NaN;
+      const sourceLabel = "";
 
       const response = await fetch("/api/nearby-shops", {
         method: "POST",

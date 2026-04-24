@@ -101,24 +101,14 @@ async function readGoogleError(response: Response, label: string): Promise<Googl
   }
 }
 
-function formatGoogleError(error: GoogleApiError, context: "places" | "geocode") {
-  const isExpiredKey =
-    error.reason === "API_KEY_INVALID" ||
-    (typeof error.message === "string" && /api key expired/i.test(error.message));
-
-  if (isExpiredKey) {
-    return "Google Maps APIキーの有効期限が切れています。Google Cloud Consoleで新しいキーに更新してください。";
+function googleErrorMessage(error: GoogleApiError, context: "places" | "geocode") {
+  if (error.reason === "API_KEY_INVALID" || (typeof error.message === "string" && /api key expired/i.test(error.message))) {
+    return "Google Maps APIキーが無効です。";
   }
-
   if (error.apiError === 403) {
-    return context === "geocode"
-      ? "Google Maps APIキーが制限されています。Google Cloud ConsoleでGeocoding APIの制限を確認してください。"
-      : "Google Maps APIキーが制限されています。Google Cloud ConsoleでPlaces APIの制限を確認してください。";
+    return context === "geocode" ? "Geocoding APIが制限されています。" : "Places APIが制限されています。";
   }
-
-  return context === "geocode"
-    ? `Geocoding APIエラー (${error.apiError})`
-    : `Google Maps APIエラー (${error.apiError})`;
+  return `Google Maps APIエラー (${error.apiError})`;
 }
 
 async function geocodeAreaWithGoogle(
