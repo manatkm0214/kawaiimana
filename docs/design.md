@@ -25,8 +25,9 @@ External Services
   ├─ Supabase                 profiles / transactions / budgets
   ├─ Auth0                    Google / LINE / メール認証
   ├─ OpenAI / Gemini 等       AI 機能
-  ├─ Nominatim (OSM)          エリアジオコーディング（サーバー）
-  ├─ Overpass API (OSM)       周辺店舗検索（ブラウザ直接呼び出し）
+  ├─ Google Maps API          周辺店舗検索 / Geocoding（優先）
+  ├─ Nominatim (OSM)          エリアジオコーディング（フォールバック）
+  ├─ Overpass API (OSM)       周辺店舗検索（フォールバック）
   ├─ Resend                   メール送信
   └─ Vercel                   Hosting / Build / Deploy
 ```
@@ -148,7 +149,8 @@ External Services
 
 - サーバーは認証・レート制限・ジオコーディングのみ担当
 - Overpass 検索をブラウザ側で実行することでサーバーのタイムアウト制限を回避
-- 外部 API（Nominatim / Overpass）は無料・APIキー不要の OSM サービスを利用
+- Google Maps API が有効な場合は優先して使用し、失敗時は OSM へ自動フォールバック
+- OSM（Nominatim / Overpass）は無料・APIキー不要で常に予備として機能
 - Overpass 障害時は予備サーバーへ自動切り替え
 - エラー時はユーザーが原因を理解しやすい文言を返す
 
@@ -160,9 +162,11 @@ External Services
 - Vercel Preview
 - Vercel Production
 
+本番 URL: `https://kawaii0214.vercel.app`
+
 デプロイ方針:
 
-- Git push ベースで Vercel に反映
+- Git push → main ブランチ → Vercel 自動デプロイ
 - 本番環境変数は Vercel 管理
 - `.env.local` はローカル専用
 

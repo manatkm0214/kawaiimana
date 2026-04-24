@@ -142,7 +142,7 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>設計書</h1>
-      <p class="meta">生成元: docs/design.md | 生成日時: 2026/04/24 4:33</p>
+      <p class="meta">生成元: docs/design.md | 生成日時: 2026/04/24 12:36</p>
     </header>
     <h1>設計書</h1>
 <h2>1. システム概要</h2>
@@ -165,8 +165,9 @@ External Services
   ├─ Supabase                 profiles / transactions / budgets
   ├─ Auth0                    Google / LINE / メール認証
   ├─ OpenAI / Gemini 等       AI 機能
-  ├─ Nominatim (OSM)          エリアジオコーディング（サーバー）
-  ├─ Overpass API (OSM)       周辺店舗検索（ブラウザ直接呼び出し）
+  ├─ Google Maps API          周辺店舗検索 / Geocoding（優先）
+  ├─ Nominatim (OSM)          エリアジオコーディング（フォールバック）
+  ├─ Overpass API (OSM)       周辺店舗検索（フォールバック）
   ├─ Resend                   メール送信
   └─ Vercel                   Hosting / Build / Deploy</code></pre>
 <h2>3. レイヤ設計</h2>
@@ -281,7 +282,8 @@ External Services
 <ul>
 <li>サーバーは認証・レート制限・ジオコーディングのみ担当</li>
 <li>Overpass 検索をブラウザ側で実行することでサーバーのタイムアウト制限を回避</li>
-<li>外部 API（Nominatim / Overpass）は無料・APIキー不要の OSM サービスを利用</li>
+<li>Google Maps API が有効な場合は優先して使用し、失敗時は OSM へ自動フォールバック</li>
+<li>OSM（Nominatim / Overpass）は無料・APIキー不要で常に予備として機能</li>
 <li>Overpass 障害時は予備サーバーへ自動切り替え</li>
 <li>エラー時はユーザーが原因を理解しやすい文言を返す</li>
 </ul>
@@ -292,9 +294,10 @@ External Services
 <li>Vercel Preview</li>
 <li>Vercel Production</li>
 </ul>
+<p>本番 URL: <code>https://kawaii0214.vercel.app</code></p>
 <p>デプロイ方針:</p>
 <ul>
-<li>Git push ベースで Vercel に反映</li>
+<li>Git push → main ブランチ → Vercel 自動デプロイ</li>
 <li>本番環境変数は Vercel 管理</li>
 <li><code>.env.local</code> はローカル専用</li>
 </ul>
