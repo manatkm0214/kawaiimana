@@ -148,10 +148,7 @@ body::before {
     radial-gradient(circle at 52% 56%, rgba(255, 255, 255, 0.90) 0 2px,   transparent 3px),
     radial-gradient(circle at 16% 74%, rgba(255, 255, 255, 0.88) 0 2.5px, transparent 4px),
     radial-gradient(circle at 82% 72%, rgba(255, 255, 255, 0.90) 0 2px,   transparent 3px),
-    radial-gradient(circle at 40% 88%, rgba(255, 255, 255, 0.85) 0 2px,   transparent 3px),
-    radial-gradient(circle at 80% 14%, rgba(251, 207, 232, 0.36), transparent 30%),
-    radial-gradient(circle at 62% 78%, rgba(191, 219, 254, 0.30), transparent 28%),
-    radial-gradient(circle at 20% 60%, rgba(244, 114, 182, 0.18), transparent 22%);
+    radial-gradient(circle at 40% 88%, rgba(255, 255, 255, 0.85) 0 2px,   transparent 3px);
   z-index: 0;
 }
 
@@ -160,12 +157,8 @@ body::after {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image: var(--background-illustration);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: var(--background-illustration-size);
-  mix-blend-mode: soft-light;
-  opacity: 0.24;
+  background-image: none;
+  opacity: 0;
   z-index: 0;
 }
 
@@ -394,29 +387,23 @@ html[data-theme="light"] .dashboard-light-copy .font-black {
 }
 
 html[data-theme="light"] .dashboard-light-copy .board-card {
-  background:
-    radial-gradient(circle at top right, rgba(244, 114, 182, 0.26), transparent 32%),
-    radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.22), transparent 32%),
-    linear-gradient(160deg, #ffffff 0%, #fff0f8 44%, #ebf8ff 100%) !important;
+  background: #ffffff !important;
   border-color: #1e293b !important;
   border-width: 2px !important;
   box-shadow:
-    0 22px 44px -22px rgba(236, 72, 153, 0.32),
-    0 8px 20px -12px rgba(14, 165, 233, 0.22),
-    inset 0 1.5px 0 rgba(255, 255, 255, 1) !important;
+    0 24px 48px -20px rgba(236, 72, 153, 0.38),
+    0 8px 20px -10px rgba(14, 165, 233, 0.26),
+    inset 0 1.5px 0 #ffffff !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy .board-tile {
-  background:
-    radial-gradient(circle at top left, rgba(244, 114, 182, 0.2), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.2), transparent 28%),
-    linear-gradient(150deg, #ffffff 0%, #feecf8 48%, #eaf7ff 100%) !important;
+  background: #ffffff !important;
   border-color: #334155 !important;
   border-width: 2px !important;
   box-shadow:
-    0 14px 30px -18px rgba(236, 72, 153, 0.26),
-    0 4px 12px -8px rgba(14, 165, 233, 0.18),
-    inset 0 1.5px 0 rgba(255, 255, 255, 1) !important;
+    0 14px 32px -16px rgba(236, 72, 153, 0.30),
+    0 4px 12px -6px rgba(14, 165, 233, 0.22),
+    inset 0 1.5px 0 #ffffff !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-slate-800"],
