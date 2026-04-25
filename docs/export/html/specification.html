@@ -142,7 +142,7 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>仕様書</h1>
-      <p class="meta">生成元: docs/specification.md | 生成日時: 2026/04/24 12:36</p>
+      <p class="meta">生成元: docs/specification.md | 生成日時: 2026/04/25 23:49</p>
     </header>
     <h1>仕様書</h1>
 <h2>1. 目的</h2>
@@ -152,6 +152,7 @@
 <li>個人の家計を管理したいユーザー</li>
 <li>生活費、固定費、貯蓄、投資のバランスを見たいユーザー</li>
 <li>AI に相談しながら家計改善を進めたいユーザー</li>
+<li>購入判断に迷っているユーザー（大きな買い物・ローン判断も含む）</li>
 </ul>
 <h2>3. 提供機能</h2>
 <h3>3.1 家計入力</h3>
@@ -159,6 +160,12 @@
 <li>収入 / 支出 / 貯蓄 / 投資の登録</li>
 <li>カテゴリ、日付、固定費フラグ、メモ入力</li>
 <li>最近の入力履歴の参照</li>
+</ul>
+<p>支出カテゴリ（2026-04-25 時点）:</p>
+<ul>
+<li>食費 / 住居 / 水道・光熱費 / 通信費 / 交通費 / 医療費 / 日用品 / 娯楽 / レジャー / 趣味</li>
+<li>教育 / 自己投資 / 保険 / 税金 / 交際費 / サブスク / ペット / 美容・衣服 / ゲーム / 推し活</li>
+<li>寄付・支援 / その他</li>
 </ul>
 <h3>3.2 ダッシュボード</h3>
 <ul>
@@ -175,22 +182,32 @@
 <li>トレードオフ提案</li>
 <li>引き落とし予約の記録</li>
 </ul>
-<h3>3.4 AI 機能</h3>
+<h3>3.4 購入アドバイザー</h3>
+<ul>
+<li>商品カテゴリと購入価格を入力して購入判断を支援</li>
+<li>労働日数・貯蓄月数で「どれくらいの努力が必要か」を数値化</li>
+<li>家・車はローン月額（PMT 公式）と収入比で購入可能ラインを判定</li>
+<li>その他は月次余剰で購入可能ラインを判定</li>
+<li>AI 相場クエリで市場価格の目安を確認</li>
+<li>「目標に追加」で個人目標タブと連携して進捗管理</li>
+</ul>
+<h3>3.5 AI 機能</h3>
 <ul>
 <li>AI 分析</li>
 <li>AI 節約アドバイス</li>
 <li>AI チャット相談</li>
 <li>AI 生活支援</li>
 <li>AI 店案内</li>
+<li>AI 相場クエリ（購入アドバイザー内）</li>
 </ul>
-<h3>3.5 認証</h3>
+<h3>3.6 認証</h3>
 <ul>
 <li>Google ログイン</li>
 <li>LINE ログイン</li>
 <li>メール系認証</li>
 <li>ログアウト</li>
 </ul>
-<h3>3.6 その他</h3>
+<h3>3.7 その他</h3>
 <ul>
 <li>問い合わせ送信</li>
 <li>設定変更</li>
@@ -207,6 +224,11 @@
 <h3>4.2 ダッシュボード</h3>
 <ul>
 <li>入力、ボード、カレンダー、目標、AI、年次、基準、シニア、こどもを切替</li>
+</ul>
+<p>目標タブ内:</p>
+<ul>
+<li>GoalsAndDebt: ローン残高・個人目標の一覧と進捗管理</li>
+<li>PurchaseAdvisor: 購入アドバイザー（同タブ内に表示）</li>
 </ul>
 <h3>4.3 設定</h3>
 <ul>
@@ -238,6 +260,7 @@
 <li>更新系 API は same-origin を要求</li>
 <li>一部 API は rate limit 付き</li>
 </ul>
+<p><code>POST</code> API ルート数: <code>19</code>（same-origin 適用: <code>16</code>、rateLimit 適用: <code>7</code>）</p>
 <h2>6. AI 店案内仕様</h2>
 <p>入力:</p>
 <ul>
@@ -257,9 +280,10 @@
 <p>検索仕様:</p>
 <ul>
 <li>エリア入力時はサーバーで Google Geocoding API（または Nominatim フォールバック）でジオコーディング</li>
-<li>店舗検索は Google Places API を優先し、失敗時は Overpass API（OSM）へ自動フォールバック</li>
+<li>店舗検索は Google Places API（New）を優先し、失敗または 0 件の場合は Overpass API（OSM）へ自動フォールバック</li>
+<li>Overpass 障害時は予備エンドポイント（overpass.kumi.systems）へ自動切り替え</li>
 <li>近い順に 6 件まで返却</li>
-<li>検索結果は 5 分間クライアントキャッシュ</li>
+<li>0 件時はエラーコードと検索座標を診断情報としてレスポンスに含む</li>
 </ul>
 <p>エラー仕様:</p>
 <ul>
@@ -267,14 +291,39 @@
 <li>ジオコーディング失敗時は <code>502</code></li>
 <li>不正入力時は <code>400</code></li>
 </ul>
-<h2>7. セキュリティ仕様</h2>
+<h2>7. 購入アドバイザー仕様</h2>
+<p>入力:</p>
+<ul>
+<li>カテゴリ（daily / appliance / beauty / game / oshi / car / home）</li>
+<li>購入価格（円）</li>
+</ul>
+<p>計算出力:</p>
+<ul>
+<li>労働日数: <code>価格 ÷ (手取り月収 ÷ 30)</code></li>
+<li>貯蓄月数: <code>価格 ÷ 月次貯蓄額</code></li>
+<li>ローン月額（car / home のみ、PMT 公式）</li>
+<li>購入可能ライン判定（アフォーダビリティ）</li>
+</ul>
+<p>アフォーダビリティ閾値:</p>
+<ul>
+<li>home: ローン月額 ≤ 手取り月収の 25%</li>
+<li>car:  ローン月額 ≤ 手取り月収の 20%</li>
+<li>その他: 購入価格 ≤ 月次余剰（収入 − 支出）</li>
+</ul>
+<p>目標連携:</p>
+<ul>
+<li>「目標に追加」ボタンで <code>kakeibo-personal-goals</code>（localStorage）へ保存</li>
+<li>保存形式: <code>{ id, name, emoji, targetAmount, currentAmount: 0, memo, status: &quot;active&quot;, createdAt }</code></li>
+</ul>
+<h2>8. セキュリティ仕様</h2>
 <ul>
 <li>認証済みユーザーのみ個人データを更新可能</li>
 <li>same-origin 対象 API は cross-site 送信を拒否</li>
 <li>rate limit 対象 API は短時間の多重送信を制限</li>
 <li>外部向け webhook は署名検証を必須化</li>
 </ul>
-<h2>8. 品質基準</h2>
+<p>セキュリティ評価: <code>86%</code>（2026-04-25 実施）</p>
+<h2>9. 品質基準</h2>
 <p>リリース前に満たす基準:</p>
 <ul>
 <li><code>eslint</code> エラー 0</li>
@@ -282,7 +331,7 @@
 <li><code>next build</code> 成功</li>
 <li>重大なハードコード秘密情報 0</li>
 </ul>
-<h2>9. 運用ルール</h2>
+<h2>10. 運用ルール</h2>
 <ul>
 <li>実シークレットは Git に含めない</li>
 <li><code>.env.local</code> と Vercel 環境変数を分離する</li>

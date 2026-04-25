@@ -142,7 +142,7 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>設計書</h1>
-      <p class="meta">生成元: docs/design.md | 生成日時: 2026/04/24 12:36</p>
+      <p class="meta">生成元: docs/design.md | 生成日時: 2026/04/25 23:49</p>
     </header>
     <h1>設計書</h1>
 <h2>1. システム概要</h2>
@@ -229,6 +229,12 @@ External Services
 <li>予算トレードオフ</li>
 <li>引き落とし予約</li>
 </ul>
+<p>個人目標（ローカルストレージ）:</p>
+<ul>
+<li>キー: <code>kakeibo-personal-goals</code></li>
+<li>保持項目: <code>id</code>, <code>name</code>, <code>emoji</code>, <code>targetAmount</code>, <code>currentAmount</code>, <code>memo</code>, <code>status</code>, <code>createdAt</code></li>
+<li>GoalsAndDebt コンポーネントおよび PurchaseAdvisor コンポーネントが同キーを共有して読み書きする</li>
+</ul>
 <p>基本方針:</p>
 <ul>
 <li>ユーザー単位でデータを分離</li>
@@ -263,7 +269,17 @@ External Services
 <ul>
 <li><code>src/app/api/profile/route.ts</code> に same-origin と rate limit を追加</li>
 </ul>
-<h2>7. AI 店案内設計</h2>
+<h2>7. カテゴリ設計</h2>
+<p><code>src/lib/utils.ts</code> の <code>CATEGORIES</code> に定義される支出カテゴリ（2026-04-25 時点）:</p>
+<ul>
+<li>食費 / 住居 / 水道・光熱費 / 通信費 / 交通費 / 医療費 / 日用品 / 娯楽 / レジャー / 趣味</li>
+<li>教育 / 自己投資 / 保険 / 税金 / 交際費 / サブスク / ペット / 美容・衣服</li>
+<li><strong>ゲーム</strong>（新規追加: 2026-04-25）</li>
+<li><strong>推し活</strong>（新規追加: 2026-04-25）</li>
+<li>寄付・支援 / その他</li>
+</ul>
+<p>CATEGORY_LABELS に英語ラベルを追加し、英語 UI でも正しく表示される。</p>
+<h2>8. AI 店案内設計</h2>
 <p>対象:</p>
 <ul>
 <li><code>src/lib/components/NearbyShopGuide.tsx</code></li>
@@ -272,22 +288,50 @@ External Services
 <p>処理フロー:</p>
 <ol>
 <li>画面で店種、エリア、自由入力キーワードを指定</li>
-<li>エリア入力時: サーバー API に送信 → Nominatim でジオコーディング → 座標を返却</li>
-<li>現在地使用時: ブラウザの Geolocation API で座標を取得</li>
-<li>ブラウザから Overpass API を直接呼び出し周辺店舗を検索</li>
+<li>エリア入力時: <code>/api/nearby-shops</code> に送信 → Google Geocoding API（失敗時は Nominatim）でジオコーディング</li>
+<li>現在地使用時: ブラウザの Geolocation API で座標を取得 → <code>/api/nearby-shops</code> に送信</li>
+<li>サーバーで Google Places API（New）を呼び出し（<code>GOOGLE_MAPS_API_KEY</code> 設定時）</li>
+<li>Google が失敗または 0 件の場合、サーバーから Overpass API（OSM）でフォールバック検索</li>
 <li>距離順に最大 6 件へ整形し表示</li>
-<li>同一条件の結果は 5 分間クライアントキャッシュ</li>
+<li>0 件時はエラーコードと検索座標を診断情報としてレスポンスに付与し UI に表示</li>
 </ol>
 <p>設計意図:</p>
 <ul>
-<li>サーバーは認証・レート制限・ジオコーディングのみ担当</li>
-<li>Overpass 検索をブラウザ側で実行することでサーバーのタイムアウト制限を回避</li>
-<li>Google Maps API が有効な場合は優先して使用し、失敗時は OSM へ自動フォールバック</li>
+<li>サーバーが認証・レート制限・ジオコーディング・店舗検索をすべて担当</li>
+<li>Google Maps API が有効な場合は優先して使用し、失敗または 0 件時は OSM へ自動フォールバック</li>
 <li>OSM（Nominatim / Overpass）は無料・APIキー不要で常に予備として機能</li>
-<li>Overpass 障害時は予備サーバーへ自動切り替え</li>
-<li>エラー時はユーザーが原因を理解しやすい文言を返す</li>
+<li>Overpass 障害時は予備エンドポイント（overpass.kumi.systems）へ自動切り替え</li>
+<li>0 件時は Google/OSM のエラーコードと検索座標を診断情報として返し、原因の特定を容易にする</li>
 </ul>
-<h2>8. デプロイ設計</h2>
+<h2>9. 購入アドバイザー設計</h2>
+<p>対象:</p>
+<ul>
+<li><code>src/lib/components/PurchaseAdvisor.tsx</code></li>
+</ul>
+<p>機能:</p>
+<ul>
+<li>商品カテゴリ（日用品 / 家電・スマホ / 美容・ファッション / ゲーム / 推し活 / 車 / 住宅）を選択</li>
+<li>購入価格と AI 相場クエリを入力して相場を確認</li>
+<li>購入に必要な「労働日数」と「貯蓄月数」を数値で表示</li>
+<li>家・車はローン月額（PMT 公式）を計算し、収入に占める割合で購入可能ラインを判定</li>
+<li>その他カテゴリは残余貯蓄で購入可能ラインを判定</li>
+</ul>
+<p>ローン計算式（PMT 公式）:</p>
+<pre><code class="language-text">月払い = P × r(1+r)^n / ((1+r)^n - 1)
+住宅: 35 年 / 年利 1%
+車:   5  年 / 年利 3%</code></pre>
+<p>アフォーダビリティ閾値:</p>
+<ul>
+<li>住宅ローン: 月額 ≤ 手取り月収の 25%</li>
+<li>車ローン:   月額 ≤ 手取り月収の 20%</li>
+<li>その他:     価格 ≤ 月次余剰（収入 − 支出）</li>
+</ul>
+<p>目標連携:</p>
+<ul>
+<li>購入アドバイザーで「目標に追加」ボタンを押すと <code>kakeibo-personal-goals</code>（ローカルストレージ）へ目標を保存</li>
+<li>GoalsAndDebt コンポーネントが同キーを参照するため、目標タブで進捗管理が可能</li>
+</ul>
+<h2>10. デプロイ設計</h2>
 <p>環境:</p>
 <ul>
 <li>ローカル開発</li>
@@ -301,19 +345,20 @@ External Services
 <li>本番環境変数は Vercel 管理</li>
 <li><code>.env.local</code> はローカル専用</li>
 </ul>
-<h2>9. 非機能要件</h2>
+<h2>11. 非機能要件</h2>
 <ul>
 <li>TypeScript による型安全</li>
 <li>ESLint による静的検証</li>
 <li>Next.js build 通過をリリース基準にする</li>
 <li>セキュリティ境界を API 側で強制する</li>
 </ul>
-<h2>10. 今後の改善候補</h2>
+<h2>12. 今後の改善候補</h2>
 <ul>
 <li>API ごとの rate limit 方針を明文化</li>
 <li>監査ログの追加</li>
 <li>README と docs の多言語整理</li>
 <li>AI 店案内の監視指標追加</li>
+<li>postcss 依存チェーンの upgrade（next の Major 更新時）</li>
 </ul>
   </main>
 </body>
