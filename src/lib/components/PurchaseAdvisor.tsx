@@ -4,11 +4,14 @@ import { useMemo, useState } from "react";
 import { formatCurrency, type Transaction } from "@/lib/utils";
 import { useLang } from "@/lib/hooks/useLang";
 
-type ItemCategory = "daily" | "appliance" | "car" | "home";
+type ItemCategory = "daily" | "appliance" | "beauty" | "game" | "oshi" | "car" | "home";
 
 const CATEGORY_EMOJI: Record<ItemCategory, string> = {
   daily: "🛒",
   appliance: "📱",
+  beauty: "💄",
+  game: "🎮",
+  oshi: "💜",
   car: "🚗",
   home: "🏠",
 };
@@ -169,6 +172,9 @@ export default function PurchaseAdvisor({
   const categoryOptions: { key: ItemCategory; ja: string; en: string }[] = [
     { key: "daily", ja: "日用品・食料品", en: "Daily / Grocery" },
     { key: "appliance", ja: "家電・スマホ・その他", en: "Appliance / Device" },
+    { key: "beauty", ja: "服・美容", en: "Beauty / Clothes" },
+    { key: "game", ja: "ゲーム", en: "Gaming" },
+    { key: "oshi", ja: "推し活", en: "Fandom" },
     { key: "car", ja: "車・バイク", en: "Car / Bike" },
     { key: "home", ja: "住宅・マンション", en: "Home / Apartment" },
   ];
