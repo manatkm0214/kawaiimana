@@ -583,6 +583,14 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
     save(KEY_GOALS, goals);
   }, [goals]);
 
+  useEffect(() => {
+    function handleGoalsUpdated() {
+      setGoals(normalizePersonalGoals(load(KEY_GOALS, [])));
+    }
+    window.addEventListener("kakeibo-goals-updated", handleGoalsUpdated);
+    return () => window.removeEventListener("kakeibo-goals-updated", handleGoalsUpdated);
+  }, []);
+
   const saveDebts = useCallback((next: Debt[]) => {
     setDebts(next);
     save(KEY_DEBTS, next);

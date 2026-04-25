@@ -645,7 +645,7 @@ export default function Dashboard({
   }, [transactions]);
 
   return (
-    <div className="dashboard-light-copy space-y-4 bg-[linear-gradient(120deg,#f8fafc_0%,#fce7f3_60%,#e0f2fe_100%)] bg-no-repeat bg-fixed">
+    <div className="dashboard-light-copy space-y-4">
       <div className="grid gap-3 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-3">
           <div className="board-card border shadow-sm rounded-[28px] p-4 bg-white">

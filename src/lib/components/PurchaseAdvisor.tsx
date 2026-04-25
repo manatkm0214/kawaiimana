@@ -165,6 +165,7 @@ export default function PurchaseAdvisor({
       createdAt: new Date().toISOString(),
     });
     window.localStorage.setItem("kakeibo-personal-goals", JSON.stringify(goals));
+    window.dispatchEvent(new Event("kakeibo-goals-updated"));
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   }
@@ -181,7 +182,7 @@ export default function PurchaseAdvisor({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[24px] board-card border p-4">
+      <div className="rounded-3xl board-card border p-4">
         <h3 className="text-base font-black text-black">{t("購入アドバイザー", "Purchase Advisor")}</h3>
         <p className="mt-1 text-sm font-semibold text-black">
           {t(
@@ -269,7 +270,7 @@ export default function PurchaseAdvisor({
       </div>
 
       {hasPrice && effort && (
-        <div className="rounded-[24px] board-card border p-4">
+        <div className="rounded-3xl board-card border p-4">
           <h3 className="text-base font-black text-black">{t("購入努力スコア", "Purchase Effort Score")}</h3>
           <p className={`mt-2 text-3xl font-black ${effortColor[effort.score]}`}>
             {effort.score === "easy"
@@ -309,7 +310,7 @@ export default function PurchaseAdvisor({
       )}
 
       {hasPrice && affordability && (
-        <div className="rounded-[24px] board-card border p-4">
+        <div className="rounded-3xl board-card border p-4">
           <h3 className="text-base font-black text-black">{t("購入可能ライン", "Affordability Check")}</h3>
 
           {affordability.kind === "bigItem" && (
@@ -401,7 +402,7 @@ export default function PurchaseAdvisor({
       )}
 
       {hasPrice && name.trim() && (
-        <div className="rounded-[24px] board-card border p-4">
+        <div className="rounded-3xl board-card border p-4">
           <h3 className="text-base font-black text-black">{t("目標に追加", "Save as goal")}</h3>
           <p className="mt-1 text-sm text-black">
             {t(
