@@ -142,23 +142,23 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>セキュリティチェック報告書</h1>
-      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/25 23:49</p>
+      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/26 0:21</p>
     </header>
     <h1>セキュリティチェック報告書</h1>
 <h2>1. 実施概要</h2>
 <ul>
 <li>対象アプリ: かわいい家計簿 / <code>kakeibo-app</code></li>
 <li>本番 URL: <code>https://kawaii0214.vercel.app</code></li>
-<li>実施日: 2026-04-24（最終更新: 2026-04-25）</li>
+<li>実施日: 2026-04-24（最終更新: 2026-04-26）</li>
 <li>実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認、本番 URL 確認</li>
 </ul>
 <h2>2. 数値サマリー</h2>
 <ul>
-<li>セキュリティ総合評価: <code>86%</code></li>
-<li><code>npm audit</code> 脆弱性件数: <code>4</code></li>
+<li>セキュリティ総合評価: <code>91%</code></li>
+<li><code>npm audit</code> 脆弱性件数: <code>0</code></li>
 <li>Critical: <code>0</code></li>
 <li>High: <code>0</code></li>
-<li>Moderate: <code>4</code>（postcss &amp;lt;8.5.10 XSS、next / auth0 / next-intl の依存チェーン由来。<strong>ビルド時ツールのみ、実行時バンドル非含有</strong>）</li>
+<li>Moderate: <code>0</code>（<code>package.json</code> の <code>overrides.postcss</code> に <code>^8.5.10</code> を追加して解消）</li>
 <li>Low: <code>0</code></li>
 <li>Git 管理下のハードコード秘密情報検出件数: <code>0</code></li>
 <li>Git 管理下の <code>.env</code> 系ファイル件数: <code>1</code></li>
@@ -172,16 +172,16 @@
 <h2>3. 総合評価の算出方法</h2>
 <ul>
 <li>今回の総合評価は、静的検査とビルド検証の結果を 100 点満点で重み付けして算出</li>
-<li>依存脆弱性: <code>25 / 30</code>（Moderate 4 件あり、ただしビルドツール由来のため重篤度減点）</li>
+<li>依存脆弱性: <code>30 / 30</code>（overrides で postcss を 8.5.10+ に固定し 0 件へ）</li>
 <li>シークレット管理: <code>25 / 25</code></li>
 <li>リクエスト起点保護: <code>16.8 / 20</code></li>
 <li>レート制限: <code>3.7 / 10</code></li>
 <li>品質ゲート: <code>15 / 15</code></li>
-<li>合計: <code>85.5 / 100</code> → 四捨五入して <code>86%</code></li>
+<li>合計: <code>90.5 / 100</code> → 四捨五入して <code>91%</code></li>
 </ul>
 <h3>3.1 配点の考え方</h3>
 <ul>
-<li>依存脆弱性は <code>npm audit</code> の Moderate 4 件を反映（Critical / High は 0）。対象が postcss ビルドツールのみで実行時バンドルに含まれないため、30 点中 25 点</li>
+<li>依存脆弱性は <code>npm audit</code> 結果をそのまま反映。<code>package.json</code> の <code>overrides</code> で postcss を <code>^8.5.10</code> に固定したことで <code>0 件</code> となり満点</li>
 <li>シークレット管理は Git 管理下のハードコード秘密情報 <code>0 件</code> を満点評価</li>
 <li>リクエスト起点保護は <code>same-origin</code> を基本指標とし、<code>16 / 19</code> のため <code>84.2%</code> を 20 点へ按分</li>
 <li>レート制限は <code>7 / 19</code> の適用率 <code>36.8%</code> を 10 点へ按分</li>
@@ -189,8 +189,7 @@
 </ul>
 <h3>3.2 解釈</h3>
 <ul>
-<li><code>86%</code> は「静的・構成・ビルド観点では良好だが、依存チェーンの Moderate 脆弱性と rateLimit 未適用ルートに改善余地あり」</li>
-<li>postcss の脆弱性はビルド時のみ影響し、エンドユーザーの実行環境へは到達しない</li>
+<li><code>91%</code> は「静的・構成・ビルド観点では高水準」という評価</li>
 <li>主な改善余地は <code>rateLimit</code> の適用拡大と、外部からの動的ペネトレーションテスト未実施の 2 点</li>
 </ul>
 <h2>4. 実施コマンド</h2>
@@ -213,11 +212,11 @@ src/app/api/auth/send-email/route.ts</code></pre>
 <h2>5. 結果詳細</h2>
 <h3>5.1 依存パッケージ監査</h3>
 <ul>
-<li><code>npm audit</code> で Moderate 4 件を検出（postcss &amp;lt;8.5.10 XSS）</li>
-<li>脆弱性パス: <code>next</code> → <code>postcss</code>, <code>@auth0/nextjs-auth0</code> → <code>postcss</code>, <code>next-intl</code> → <code>postcss</code></li>
-<li>postcss はビルドツール（CSS 変換）であり、実行時バンドルには含まれない</li>
-<li>エンドユーザーの実行環境への影響はなく、ビルド作業者の環境でのみ問題が発生する可能性がある</li>
-<li><code>next</code> の Major バージョンアップが確定するまでは影響を許容可能と判断</li>
+<li>前回（2026-04-25）は <code>postcss &lt;8.5.10</code> に起因する Moderate 4 件が存在していた</li>
+<li><code>package.json</code> の <code>overrides</code> に <code>&quot;postcss&quot;: &quot;^8.5.10&quot;</code> を追加し <code>npm install</code> を実行</li>
+<li><code>node_modules/next/node_modules/postcss</code> が 8.4.31 から 8.5.10+ に更新され、脆弱性が解消された</li>
+<li>再実行後の <code>npm audit</code> は <code>0 vulnerabilities</code></li>
+<li><code>next build</code> も引き続き成功（互換性に問題なし）</li>
 <li>現時点での依存数は約 <code>582</code>（production 依存 <code>176</code>）</li>
 </ul>
 <h3>5.2 シークレット管理</h3>
@@ -244,18 +243,16 @@ src/app/api/auth/send-email/route.ts</code></pre>
 <h2>6. 残課題と所見</h2>
 <ul>
 <li><code>rateLimit</code> は全 <code>POST</code> API に一律ではないため、将来的には対象拡大の余地あり</li>
-<li><code>npm audit fix</code> を実行しても <code>next</code> 等の Major 依存を巻き込むため、現状は手動 upgrade 待ち</li>
 <li>Auth0 の <code>dpopUtils.js</code> に起因する build warning は依存側の挙動で、現状は機能阻害なし</li>
 <li>今回は静的検査とビルド検証が中心であり、外部からの動的ペネトレーションテストまでは未実施</li>
 <li>LINE / Google OAuth の Callback URL は本番 URL に合わせて各開発者コンソールへ登録が必要</li>
 </ul>
 <h2>7. 総合判定</h2>
 <ul>
-<li>今回の実施範囲では、Critical / High の脆弱性は <code>0 件</code></li>
-<li>Moderate 4 件はビルド時ツール（postcss）由来のみで、実行時影響なし</li>
+<li>今回の実施範囲では、<code>npm audit</code> 脆弱性は <code>0 件</code>（postcss override 適用後）</li>
 <li>重大な秘密情報の Git 混入も検出されず</li>
 <li>ビルド、型検査、Lint を通過しており、現時点のコードベースはデプロイ可能な状態</li>
-<li>総合評価は <code>86%</code> で、本番運用に耐える状態。postcss のアップグレードと rate limit の拡張でさらに引き上げ可能</li>
+<li>総合評価は <code>91%</code> で、本番運用に耐える高水準な状態</li>
 </ul>
   </main>
 </body>

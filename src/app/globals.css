@@ -4,10 +4,10 @@
 :root {
   /* プロジェクト固有 */
   --background:
-    radial-gradient(circle at 50% 108%, rgba(125, 211, 252, 0.42) 0%, rgba(186, 230, 253, 0.2) 18%, rgba(255, 255, 255, 0) 36%),
-    radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0) 18%),
-    radial-gradient(circle at 82% 16%, rgba(244, 114, 182, 0.2) 0%, rgba(244, 114, 182, 0) 24%),
-    linear-gradient(180deg, #fffaf5 0%, #fff1f7 18%, #f4ecff 54%, #dbf2ff 86%, #f8fdff 100%);
+    radial-gradient(circle at 18% 18%, rgba(244, 114, 182, 0.38) 0%, rgba(244, 114, 182, 0) 36%),
+    radial-gradient(circle at 82% 16%, rgba(167, 139, 250, 0.28) 0%, rgba(167, 139, 250, 0) 30%),
+    radial-gradient(circle at 50% 90%, rgba(56, 189, 248, 0.42) 0%, rgba(56, 189, 248, 0.12) 28%, rgba(56, 189, 248, 0) 44%),
+    linear-gradient(180deg, #fff3fa 0%, #f8f0ff 36%, #e8f4ff 78%, #f0fdff 100%);
   --foreground: #0f172a;
   --surface: #ffffff;
   --surface-strong: #f8fafc;
@@ -58,10 +58,10 @@
 
 html[data-theme="light"] {
   --background:
-    radial-gradient(circle at 50% 108%, rgba(125, 211, 252, 0.42) 0%, rgba(186, 230, 253, 0.2) 18%, rgba(255, 255, 255, 0) 36%),
-    radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0) 18%),
-    radial-gradient(circle at 82% 16%, rgba(244, 114, 182, 0.2) 0%, rgba(244, 114, 182, 0) 24%),
-    linear-gradient(180deg, #fffaf5 0%, #fff1f7 18%, #f4ecff 54%, #dbf2ff 86%, #f8fdff 100%);
+    radial-gradient(circle at 18% 18%, rgba(244, 114, 182, 0.38) 0%, rgba(244, 114, 182, 0) 36%),
+    radial-gradient(circle at 82% 16%, rgba(167, 139, 250, 0.28) 0%, rgba(167, 139, 250, 0) 30%),
+    radial-gradient(circle at 50% 90%, rgba(56, 189, 248, 0.42) 0%, rgba(56, 189, 248, 0.12) 28%, rgba(56, 189, 248, 0) 44%),
+    linear-gradient(180deg, #fff3fa 0%, #f8f0ff 36%, #e8f4ff 78%, #f0fdff 100%);
   --foreground: #0f172a;
   --surface: #ffffff;
   --surface-strong: #f8fafc;
@@ -141,9 +141,17 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image:
-    radial-gradient(circle at 80% 14%, rgba(251, 207, 232, 0.28), transparent 32%),
-    radial-gradient(circle at 62% 78%, rgba(191, 219, 254, 0.22), transparent 30%),
-    radial-gradient(circle at 34% 72%, rgba(254, 240, 138, 0.12), transparent 26%);
+    radial-gradient(circle at 8%  14%, rgba(255, 255, 255, 0.95) 0 2.5px, transparent 4px),
+    radial-gradient(circle at 24% 32%, rgba(255, 255, 255, 0.88) 0 2px,   transparent 3px),
+    radial-gradient(circle at 70% 12%, rgba(255, 255, 255, 0.92) 0 2.5px, transparent 4px),
+    radial-gradient(circle at 88% 34%, rgba(255, 255, 255, 0.85) 0 2px,   transparent 3px),
+    radial-gradient(circle at 52% 56%, rgba(255, 255, 255, 0.90) 0 2px,   transparent 3px),
+    radial-gradient(circle at 16% 74%, rgba(255, 255, 255, 0.88) 0 2.5px, transparent 4px),
+    radial-gradient(circle at 82% 72%, rgba(255, 255, 255, 0.90) 0 2px,   transparent 3px),
+    radial-gradient(circle at 40% 88%, rgba(255, 255, 255, 0.85) 0 2px,   transparent 3px),
+    radial-gradient(circle at 80% 14%, rgba(251, 207, 232, 0.36), transparent 30%),
+    radial-gradient(circle at 62% 78%, rgba(191, 219, 254, 0.30), transparent 28%),
+    radial-gradient(circle at 20% 60%, rgba(244, 114, 182, 0.18), transparent 22%);
   z-index: 0;
 }
 
@@ -387,26 +395,28 @@ html[data-theme="light"] .dashboard-light-copy .font-black {
 
 html[data-theme="light"] .dashboard-light-copy .board-card {
   background:
-    radial-gradient(circle at top right, rgba(244, 114, 182, 0.1), transparent 28%),
-    radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.1), transparent 30%),
-    linear-gradient(180deg, #ffffff 0%, #fff7fb 48%, #f8fbff 100%) !important;
+    radial-gradient(circle at top right, rgba(244, 114, 182, 0.26), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.22), transparent 32%),
+    linear-gradient(160deg, #ffffff 0%, #fff0f8 44%, #ebf8ff 100%) !important;
   border-color: #1e293b !important;
   border-width: 2px !important;
   box-shadow:
-    0 18px 34px -24px rgba(15, 23, 42, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.94);
+    0 22px 44px -22px rgba(236, 72, 153, 0.32),
+    0 8px 20px -12px rgba(14, 165, 233, 0.22),
+    inset 0 1.5px 0 rgba(255, 255, 255, 1) !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy .board-tile {
   background:
-    radial-gradient(circle at top left, rgba(244, 114, 182, 0.12), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.12), transparent 28%),
-    linear-gradient(180deg, #ffffff 0%, #fff7fb 52%, #f8fbff 100%) !important;
+    radial-gradient(circle at top left, rgba(244, 114, 182, 0.2), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.2), transparent 28%),
+    linear-gradient(150deg, #ffffff 0%, #feecf8 48%, #eaf7ff 100%) !important;
   border-color: #334155 !important;
   border-width: 2px !important;
   box-shadow:
-    0 12px 24px -18px rgba(15, 23, 42, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+    0 14px 30px -18px rgba(236, 72, 153, 0.26),
+    0 4px 12px -8px rgba(14, 165, 233, 0.18),
+    inset 0 1.5px 0 rgba(255, 255, 255, 1) !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-slate-800"],
@@ -421,25 +431,25 @@ html[data-theme="light"] .dashboard-light-copy [class*="bg-slate-950"] {
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-rose-50"],
 html[data-theme="light"] .dashboard-light-copy [class*="bg-rose-950"] {
-  background: #ffe4e6 !important;
+  background: #fecdd3 !important;
   border-color: #be123c !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-amber-50"],
 html[data-theme="light"] .dashboard-light-copy [class*="bg-amber-950"] {
-  background: #fef3c7 !important;
+  background: #fde68a !important;
   border-color: #b45309 !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-cyan-50"],
 html[data-theme="light"] .dashboard-light-copy [class*="bg-cyan-950"] {
-  background: #cffafe !important;
+  background: #a5f3fc !important;
   border-color: #0e7490 !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-emerald-50"],
 html[data-theme="light"] .dashboard-light-copy [class*="bg-emerald-950"] {
-  background: #d1fae5 !important;
+  background: #a7f3d0 !important;
   border-color: #047857 !important;
 }
 
@@ -510,19 +520,19 @@ html[data-theme="light"] .dashboard-light-copy .border-dashed {
 }
 
 html[data-theme="light"] .dashboard-light-copy .bg-cyan-100 {
-  background-color: rgba(207, 250, 254, 0.62) !important;
+  background-color: #a5f3fc !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy .bg-emerald-100 {
-  background-color: rgba(220, 252, 231, 0.62) !important;
+  background-color: #a7f3d0 !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy .bg-amber-100 {
-  background-color: rgba(254, 243, 199, 0.66) !important;
+  background-color: #fde68a !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy .bg-pink-100 {
-  background-color: rgba(252, 231, 243, 0.64) !important;
+  background-color: #fbcfe8 !important;
 }
 
 .recipe-clear-button {
