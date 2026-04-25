@@ -824,12 +824,12 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
   const goalEmojis = ["🎯", "🎤", "🌸", "🎮", "🎬", "💄", "👗", "📚", "🏃", "✨"];
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex gap-1 rounded-xl border border-slate-700/50 bg-slate-800/60 p-1">
+    <div className="goal-clarity flex flex-col gap-3">
+      <div className="flex gap-1 rounded-xl border border-slate-500/80 bg-slate-950/90 p-1 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]">
         {([
           { key: "debt", label: t("ローン", "Loans"), fullLabel: t("ローン・借入", "Loans & debt") },
           { key: "sinking", label: t("積立", "Savings"), fullLabel: t("先取積み立て", "Sinking funds") },
-          { key: "goals", label: t("目標", "Goals"), fullLabel: t("推し活目標", "Personal goals") },
+          { key: "goals", label: t("個人", "Personal"), fullLabel: t("個人目標", "Personal goals") },
           { key: "fixedCostFlags", label: t("固定費", "Fixed"), fullLabel: t("固定費見直し", "Fixed cost flags") },
           { key: "virtue", label: t("徳", "Virtue"), fullLabel: t("徳ポイント", "Virtue points") },
         ] as const).map(({ key, label, fullLabel }) => (
@@ -837,8 +837,8 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
             key={key}
             type="button"
             onClick={() => setTab(key)}
-            className={`flex-1 rounded-lg py-1.5 text-xs font-medium transition-all ${
-              tab === key ? "bg-violet-600 text-white" : "text-slate-400 hover:text-white"
+            className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-all ${
+              tab === key ? "bg-violet-600 text-white shadow-sm" : "bg-slate-900/75 text-slate-50 hover:bg-slate-700/90 hover:text-white"
             }`}
           >
             <span className="sm:hidden">{label}</span>
@@ -995,7 +995,7 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
               </div>
             </div>
           ) : (
-            <button type="button" onClick={() => setShowDebtForm(true)} className="w-full rounded-xl border border-dashed border-slate-600 py-2 text-sm text-slate-400 transition-all hover:border-violet-500 hover:text-violet-300">
+            <button type="button" onClick={() => setShowDebtForm(true)} className="w-full rounded-xl border border-dashed border-slate-500/90 bg-slate-950/70 py-2 text-sm font-semibold text-slate-100 transition-all hover:border-violet-400 hover:text-white">
               {t("ローンを追加", "Add loan")}
             </button>
           )}
@@ -1022,9 +1022,9 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
           )}
 
           {activeSinkingFunds.length === 0 && !showSinkingForm && (
-            <div className="rounded-xl border border-slate-700/50 bg-slate-800/60 px-4 py-8 text-center text-sm text-slate-400">
+            <div className="rounded-xl border border-slate-600/80 bg-slate-900/80 px-4 py-8 text-center text-sm text-slate-200">
               <p className="font-semibold text-slate-200">{t("先取積み立てはまだありません", "No sinking funds yet")}</p>
-              <p className="mt-1 text-xs">{t("旅行・車検・家電など、予定支出の積立を残せます。", "Keep savings plans for travel, maintenance, appliances, and planned costs.")}</p>
+              <p className="mt-1 text-xs text-slate-100">{t("旅行・車検・家電など、予定支出の積立を残せます。", "Keep savings plans for travel, maintenance, appliances, and planned costs.")}</p>
             </div>
           )}
 
@@ -1041,7 +1041,7 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
 
           {archivedSinkingFunds.length > 0 && (
             <details className="rounded-xl border border-slate-700/50 bg-slate-800/50">
-              <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-slate-300">
+              <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-slate-100">
                 {t("過去の先取積み立て", "Past sinking funds")} ({archivedSinkingFunds.length})
               </summary>
               <div className="space-y-2 border-t border-slate-700/60 p-3">
@@ -1131,7 +1131,7 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
               </div>
             </div>
           ) : (
-            <button type="button" onClick={() => setShowSinkingForm(true)} className="w-full rounded-xl border border-dashed border-slate-600 py-2 text-sm text-slate-400 transition-all hover:border-violet-500 hover:text-violet-300">
+            <button type="button" onClick={() => setShowSinkingForm(true)} className="w-full rounded-xl border border-dashed border-slate-500/90 bg-slate-950/70 py-2 text-sm font-semibold text-slate-100 transition-all hover:border-violet-400 hover:text-white">
               {t("先取積み立てを追加", "Add sinking fund")}
             </button>
           )}
@@ -1170,9 +1170,9 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
           </div>
 
           {activeGoals.length === 0 && !showGoalForm && (
-            <div className="rounded-xl border border-slate-700/50 bg-slate-800/60 px-4 py-8 text-center text-sm text-slate-400">
-              <p className="font-semibold text-slate-200">{t("推し活目標はまだありません", "No personal goals yet")}</p>
-              <p className="mt-1 text-xs">{t("ライブ・美容・趣味など、楽しみのための貯金を残せます。", "Keep savings goals for concerts, beauty, hobbies, and personal joys.")}</p>
+            <div className="rounded-xl border border-slate-600/80 bg-slate-900/80 px-4 py-8 text-center text-sm text-slate-200">
+              <p className="font-semibold text-slate-200">{t("個人目標はまだありません", "No personal goals yet")}</p>
+              <p className="mt-1 text-xs text-slate-100">{t("ライブ・美容・趣味など、楽しみのための貯金を残せます。", "Keep savings goals for concerts, beauty, hobbies, and personal joys.")}</p>
             </div>
           )}
 
@@ -1192,8 +1192,8 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
 
           {archivedGoals.length > 0 && (
             <details className="rounded-xl border border-slate-700/50 bg-slate-800/50">
-              <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-slate-300">
-                {t("過去の推し活目標", "Past personal goals")} ({archivedGoals.length})
+              <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-slate-100">
+                {t("過去の個人目標", "Past personal goals")} ({archivedGoals.length})
               </summary>
               <div className="space-y-2 border-t border-slate-700/60 p-3">
                 {archivedGoals.map((goal) => (
@@ -1223,7 +1223,7 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
 
           {showGoalForm ? (
             <div className="space-y-2 rounded-xl border border-violet-700/40 bg-slate-800/60 p-3">
-              <p className="text-xs font-semibold text-slate-200">{editGoalId ? t("推し活目標を編集", "Edit goal") : t("推し活目標を追加", "Add goal")}</p>
+              <p className="text-xs font-semibold text-slate-200">{editGoalId ? t("個人目標を編集", "Edit goal") : t("個人目標を追加", "Add goal")}</p>
               <div className="flex flex-wrap gap-1">
                 {goalEmojis.map((emoji) => (
                   <button
@@ -1276,8 +1276,8 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
               </div>
             </div>
           ) : (
-            <button type="button" onClick={() => setShowGoalForm(true)} className="w-full rounded-xl border border-dashed border-slate-600 py-2 text-sm text-slate-400 transition-all hover:border-violet-500 hover:text-violet-300">
-              {t("推し活目標を追加", "Add personal goal")}
+            <button type="button" onClick={() => setShowGoalForm(true)} className="w-full rounded-xl border border-dashed border-slate-500/90 bg-slate-950/70 py-2 text-sm font-semibold text-slate-100 transition-all hover:border-violet-400 hover:text-white">
+              {t("個人目標を追加", "Add personal goal")}
             </button>
           )}
         </div>
@@ -1311,9 +1311,9 @@ export default function GoalsAndDebt({ transactions, currentMonth }: Props) {
           )}
 
           {fixedCostFlags.length === 0 ? (
-            <div className="rounded-xl border border-slate-700/50 bg-slate-800/60 px-4 py-8 text-center text-sm text-slate-400">
+            <div className="rounded-xl border border-slate-600/80 bg-slate-900/80 px-4 py-8 text-center text-sm text-slate-200">
               <p className="font-semibold text-slate-200">{t("今月の固定費フラグはありません", "No fixed cost flags this month")}</p>
-              <p className="mt-1 text-xs">{t("固定費またはサブスクを入力すると、ここに解約・見直し候補が出ます。", "Enter fixed costs or subscriptions to see cancellation and review candidates here.")}</p>
+              <p className="mt-1 text-xs text-slate-100">{t("固定費またはサブスクを入力すると、ここに解約・見直し候補が出ます。", "Enter fixed costs or subscriptions to see cancellation and review candidates here.")}</p>
             </div>
           ) : (
             fixedCostFlags.map((flag) => (

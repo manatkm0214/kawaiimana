@@ -127,11 +127,13 @@ body {
   min-height: 100%;
 }
 
+
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: #000 !important;
   font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
   line-height: 1.6;
+  font-weight: 900 !important;
   transition: background 180ms ease, color 180ms ease;
 }
 
@@ -167,18 +169,24 @@ body > * {
   z-index: 1;
 }
 
+
 h1,
 h2,
 h3,
 h4 {
   letter-spacing: -0.02em;
   line-height: 1.2;
+  color: #000 !important;
+  font-weight: 900 !important;
 }
+
 
 p,
 li,
 label {
   line-height: 1.6;
+  color: #000 !important;
+  font-weight: 900 !important;
 }
 
 button,
@@ -322,46 +330,10 @@ html[data-theme="light"] .metric-tile-accent {
     0 10px 22px -18px rgba(56, 189, 248, 0.14);
 }
 
-html[data-theme="light"] .dashboard-light-copy .text-black,
-html[data-theme="light"] .dashboard-light-copy .text-white,
-html[data-theme="light"] .dashboard-light-copy .text-slate-50,
-html[data-theme="light"] .dashboard-light-copy .text-slate-100,
-html[data-theme="light"] .dashboard-light-copy .text-slate-200,
-html[data-theme="light"] .dashboard-light-copy .text-slate-300,
-html[data-theme="light"] .dashboard-light-copy .text-slate-400,
-html[data-theme="light"] .dashboard-light-copy .text-slate-500,
-html[data-theme="light"] .dashboard-light-copy .text-slate-600,
-html[data-theme="light"] .dashboard-light-copy .text-slate-700,
-html[data-theme="light"] .dashboard-light-copy .text-slate-800,
-html[data-theme="light"] .dashboard-light-copy .text-slate-900,
-html[data-theme="light"] .dashboard-light-copy .text-slate-950,
-html[data-theme="light"] .dashboard-light-copy .text-cyan-600,
-html[data-theme="light"] .dashboard-light-copy .text-cyan-700,
-html[data-theme="light"] .dashboard-light-copy .text-cyan-800,
-html[data-theme="light"] .dashboard-light-copy .text-cyan-900,
-html[data-theme="light"] .dashboard-light-copy .text-cyan-300,
-html[data-theme="light"] .dashboard-light-copy .text-cyan-200,
-html[data-theme="light"] .dashboard-light-copy .text-cyan-100,
-html[data-theme="light"] .dashboard-light-copy .text-emerald-700,
-html[data-theme="light"] .dashboard-light-copy .text-emerald-800,
-html[data-theme="light"] .dashboard-light-copy .text-emerald-300,
-html[data-theme="light"] .dashboard-light-copy .text-emerald-200,
-html[data-theme="light"] .dashboard-light-copy .text-emerald-100,
-html[data-theme="light"] .dashboard-light-copy .text-orange-700,
-html[data-theme="light"] .dashboard-light-copy .text-orange-300,
-html[data-theme="light"] .dashboard-light-copy .text-amber-700,
-html[data-theme="light"] .dashboard-light-copy .text-amber-800,
-html[data-theme="light"] .dashboard-light-copy .text-amber-300,
-html[data-theme="light"] .dashboard-light-copy .text-amber-200,
-html[data-theme="light"] .dashboard-light-copy .text-pink-700,
-html[data-theme="light"] .dashboard-light-copy .text-pink-800,
-html[data-theme="light"] .dashboard-light-copy .text-pink-200,
-html[data-theme="light"] .dashboard-light-copy .text-violet-700,
-html[data-theme="light"] .dashboard-light-copy .text-violet-800,
-html[data-theme="light"] .dashboard-light-copy .text-sky-700,
-html[data-theme="light"] .dashboard-light-copy .text-blue-700,
-html[data-theme="light"] .dashboard-light-copy .text-violet-300 {
-  color: #000000 !important;
+
+html[data-theme="light"] .dashboard-light-copy * {
+  color: #000 !important;
+  font-weight: 900 !important;
 }
 
 /* 彩度を保つカラー — 黒マッピングから除外 */
@@ -520,6 +492,33 @@ html[data-theme="light"] .dashboard-light-copy .bg-amber-100 {
 
 html[data-theme="light"] .dashboard-light-copy .bg-pink-100 {
   background-color: #fbcfe8 !important;
+}
+
+html[data-theme="light"] .dashboard-light-copy .recharts-text,
+html[data-theme="light"] .dashboard-light-copy .recharts-cartesian-axis-tick-value,
+html[data-theme="light"] .dashboard-light-copy .recharts-polar-angle-axis-tick-value,
+html[data-theme="light"] .dashboard-light-copy .recharts-legend-item-text {
+  fill: #0f172a !important;
+}
+
+html[data-theme="light"] .dashboard-light-copy .recharts-cartesian-grid-horizontal line,
+html[data-theme="light"] .dashboard-light-copy .recharts-cartesian-grid-vertical line,
+html[data-theme="light"] .dashboard-light-copy .recharts-polar-grid line,
+html[data-theme="light"] .dashboard-light-copy .recharts-polar-angle-axis line {
+  stroke: rgba(51, 65, 85, 0.28) !important;
+}
+
+html[data-theme="light"] .dashboard-light-copy .recharts-default-tooltip {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 2px solid #334155 !important;
+  border-radius: 14px;
+  box-shadow: 0 18px 36px -24px rgba(15, 23, 42, 0.32) !important;
+}
+
+html[data-theme="light"] .dashboard-light-copy .recharts-default-tooltip *,
+html[data-theme="light"] .dashboard-light-copy .recharts-tooltip-item,
+html[data-theme="light"] .dashboard-light-copy .recharts-tooltip-label {
+  color: #0f172a !important;
 }
 
 .recipe-clear-button {
@@ -1067,6 +1066,160 @@ html[data-theme="dark"] .month-switch-arrow:hover {
 html[data-theme="dark"] .month-switch-current:not(.text-white) {
   background: rgba(30, 41, 59, 0.72) !important;
   color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity .metric-shell {
+  border-color: rgba(148, 163, 184, 0.58) !important;
+  background:
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 24%),
+    radial-gradient(circle at bottom left, rgba(244, 114, 182, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 41, 59, 0.98) 100%) !important;
+  box-shadow:
+    0 24px 54px -36px rgba(8, 145, 178, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity .metric-tile {
+  border-color: rgba(148, 163, 184, 0.52) !important;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 22%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.94) 0%, rgba(15, 23, 42, 0.98) 100%) !important;
+  box-shadow: 0 18px 36px -28px rgba(8, 145, 178, 0.18) !important;
+}
+
+
+html[data-theme="dark"] .dashboard-clarity * {
+  color: #000 !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity [class*="border-slate-700"],
+html[data-theme="dark"] .dashboard-clarity [class*="border-slate-600"],
+html[data-theme="dark"] .dashboard-clarity [class*="border-slate-500"],
+html[data-theme="dark"] .dashboard-clarity [class*="border-white/10"],
+html[data-theme="dark"] .dashboard-clarity [class*="border-white/5"] {
+  border-color: rgba(148, 163, 184, 0.66) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity [class*="bg-slate-800"],
+html[data-theme="dark"] .dashboard-clarity [class*="bg-slate-900"],
+html[data-theme="dark"] .dashboard-clarity [class*="bg-slate-950"] {
+  background-color: rgba(15, 23, 42, 0.92) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity [class*="bg-cyan-950"] {
+  background-color: rgba(8, 47, 73, 0.88) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity [class*="bg-emerald-950"] {
+  background-color: rgba(6, 78, 59, 0.84) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity [class*="bg-rose-950"] {
+  background-color: rgba(76, 5, 25, 0.84) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity [class*="bg-violet-950"] {
+  background-color: rgba(46, 16, 101, 0.84) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity input,
+html[data-theme="dark"] .dashboard-clarity textarea,
+html[data-theme="dark"] .dashboard-clarity select {
+  color: #f8fbff !important;
+  border-color: rgba(148, 163, 184, 0.74) !important;
+  background: rgba(15, 23, 42, 0.96) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity input::placeholder,
+html[data-theme="dark"] .dashboard-clarity textarea::placeholder {
+  color: #cbd5e1 !important;
+  opacity: 1;
+}
+
+html[data-theme="dark"] .dashboard-clarity .text-xs,
+html[data-theme="dark"] .dashboard-clarity [class*="text-[10px]"],
+html[data-theme="dark"] .dashboard-clarity [class*="text-[11px]"] {
+  letter-spacing: 0.01em;
+  font-weight: 600;
+}
+
+html[data-theme="dark"] .dashboard-clarity .recharts-text,
+html[data-theme="dark"] .dashboard-clarity .recharts-cartesian-axis-tick-value,
+html[data-theme="dark"] .dashboard-clarity .recharts-polar-angle-axis-tick-value,
+html[data-theme="dark"] .dashboard-clarity .recharts-legend-item-text {
+  fill: #e7eef8 !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity .recharts-cartesian-grid-horizontal line,
+html[data-theme="dark"] .dashboard-clarity .recharts-cartesian-grid-vertical line,
+html[data-theme="dark"] .dashboard-clarity .recharts-polar-grid line,
+html[data-theme="dark"] .dashboard-clarity .recharts-polar-angle-axis line {
+  stroke: rgba(148, 163, 184, 0.28) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity .recharts-default-tooltip {
+  background: rgba(15, 23, 42, 0.98) !important;
+  border: 1px solid rgba(148, 163, 184, 0.72) !important;
+  border-radius: 14px;
+  box-shadow: 0 22px 44px -30px rgba(2, 6, 23, 0.58) !important;
+}
+
+html[data-theme="dark"] .dashboard-clarity .recharts-default-tooltip *,
+html[data-theme="dark"] .dashboard-clarity .recharts-tooltip-item,
+html[data-theme="dark"] .dashboard-clarity .recharts-tooltip-label {
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .goal-clarity .text-slate-500 {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .goal-clarity .text-slate-400 {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .goal-clarity .text-slate-300 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .goal-clarity .text-slate-200 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .goal-clarity [class*="border-slate-700"],
+html[data-theme="dark"] .goal-clarity [class*="border-slate-600"],
+html[data-theme="dark"] .goal-clarity [class*="border-slate-500"] {
+  border-color: rgba(148, 163, 184, 0.68) !important;
+}
+
+html[data-theme="dark"] .goal-clarity [class*="bg-slate-800"],
+html[data-theme="dark"] .goal-clarity [class*="bg-slate-900"],
+html[data-theme="dark"] .goal-clarity [class*="bg-slate-950"] {
+  background-color: rgba(2, 6, 23, 0.9) !important;
+}
+
+html[data-theme="dark"] .goal-clarity [class*="bg-violet-950"] {
+  background-color: rgba(49, 16, 80, 0.6) !important;
+}
+
+html[data-theme="dark"] .goal-clarity input,
+html[data-theme="dark"] .goal-clarity textarea,
+html[data-theme="dark"] .goal-clarity select {
+  color: #ffffff !important;
+  border-color: rgba(148, 163, 184, 0.76) !important;
+  background: rgba(2, 6, 23, 0.96) !important;
+}
+
+html[data-theme="dark"] .goal-clarity input::placeholder,
+html[data-theme="dark"] .goal-clarity textarea::placeholder {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .goal-clarity .text-xs,
+html[data-theme="dark"] .goal-clarity [class*="text-[10px]"] {
+  letter-spacing: 0.01em;
+  font-weight: 500;
 }
 
 /* Board-themed card/tile — matches InputForm board preset styling */

@@ -350,7 +350,7 @@ function GeneralGoals({ transactions, currentMonth, profile }: Props) {
 
   return (
     <div className="space-y-4">
-      <SectionCard title={t("一般の目標", "General goals")}>
+      <SectionCard title={t("個人の目標", "Personal goals")}>
         <div className="grid gap-3 md:grid-cols-3">
           <MetricBox label={t("直近3か月の平均収入", "3-month average income")} value={formatCurrency(stats.income)} />
           <MetricBox label={t("直近3か月の平均支出", "3-month average expense")} value={formatCurrency(stats.expense)} />
@@ -678,10 +678,10 @@ export default function GenerationGoals({ transactions, currentMonth, profile, g
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className="goal-clarity space-y-4">
+      <div className="flex gap-2 rounded-2xl border border-slate-500/80 bg-slate-950/90 p-1.5 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]">
         {([
-          { key: "general", label: t("一般", "General") },
+          { key: "general", label: t("個人", "Personal") },
           { key: "kids", label: t("こども", "Kids") },
           { key: "senior", label: t("シニア", "Senior") },
         ] as const).map((tab) => (
@@ -689,8 +689,8 @@ export default function GenerationGoals({ transactions, currentMonth, profile, g
             key={tab.key}
             type="button"
             onClick={() => handleGenerationChange(tab.key)}
-            className={`rounded-xl border px-4 py-2 text-xs font-bold transition ${
-              generation === tab.key ? "border-violet-500 bg-violet-600 text-white" : "border-slate-700 text-slate-300 hover:text-white"
+            className={`flex-1 rounded-xl border px-4 py-2 text-xs font-bold transition ${
+              generation === tab.key ? "border-violet-500 bg-violet-600 text-white shadow-sm" : "border-slate-600 bg-slate-900/80 text-slate-50 hover:border-slate-400 hover:bg-slate-700/90 hover:text-white"
             }`}
           >
             {tab.label}

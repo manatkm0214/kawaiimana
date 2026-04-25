@@ -142,7 +142,7 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>仕様書</h1>
-      <p class="meta">生成元: docs/specification.md | 生成日時: 2026/04/26 0:21</p>
+      <p class="meta">生成元: docs/specification.md | 生成日時: 2026/04/26 1:17</p>
     </header>
     <h1>仕様書</h1>
 <h2>1. 目的</h2>
@@ -189,7 +189,7 @@
 <li>家・車はローン月額（PMT 公式）と収入比で購入可能ラインを判定</li>
 <li>その他は月次余剰で購入可能ラインを判定</li>
 <li>AI 相場クエリで市場価格の目安を確認</li>
-<li>「目標に追加」で個人目標タブと連携して進捗管理</li>
+<li>「目標に追加」で目標画面の「個人」タブ内の個人目標と連携して進捗管理</li>
 </ul>
 <h3>3.5 AI 機能</h3>
 <ul>
@@ -224,10 +224,12 @@
 <h3>4.2 ダッシュボード</h3>
 <ul>
 <li>入力、ボード、カレンダー、目標、AI、年次、基準、シニア、こどもを切替</li>
+<li>大人向けダッシュボードと AI生活サポートは、light / dark theme の両方で補助文字・グラフラベル・入力欄の可読性を確保</li>
 </ul>
 <p>目標タブ内:</p>
 <ul>
-<li>GoalsAndDebt: ローン残高・個人目標の一覧と進捗管理</li>
+<li>GenerationGoals: 画面上部で「個人 / こども / シニア」を切替</li>
+<li>GoalsAndDebt: ローン残高・個人目標（「個人」タブ）の一覧と進捗管理</li>
 <li>PurchaseAdvisor: 購入アドバイザー（同タブ内に表示）</li>
 </ul>
 <h3>4.3 設定</h3>
@@ -260,7 +262,7 @@
 <li>更新系 API は same-origin を要求</li>
 <li>一部 API は rate limit 付き</li>
 </ul>
-<p><code>POST</code> API ルート数: <code>19</code>（same-origin 適用: <code>16</code>、rateLimit 適用: <code>7</code>）</p>
+<p><code>POST</code> API ルート数: <code>17</code>（same-origin 適用: <code>16</code>、rateLimit 適用: <code>7</code>）</p>
 <h2>6. AI 店案内仕様</h2>
 <p>入力:</p>
 <ul>
@@ -322,7 +324,7 @@
 <li>rate limit 対象 API は短時間の多重送信を制限</li>
 <li>外部向け webhook は署名検証を必須化</li>
 </ul>
-<p>セキュリティ評価: <code>91%</code>（2026-04-26 実施、postcss override で npm audit 0 件）</p>
+<p>セキュリティ評価: <code>93%</code>（2026-04-26 実施、postcss override で npm audit 0 件）</p>
 <h2>9. 品質基準</h2>
 <p>リリース前に満たす基準:</p>
 <ul>

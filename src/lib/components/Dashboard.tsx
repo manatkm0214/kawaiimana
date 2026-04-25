@@ -645,7 +645,7 @@ export default function Dashboard({
   }, [transactions]);
 
   return (
-    <div className="dashboard-light-copy space-y-4">
+    <div className="dashboard-light-copy dashboard-clarity space-y-4">
       <div className="grid gap-3 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-3">
           <div className="board-card border shadow-sm rounded-[28px] p-4 bg-white">
@@ -744,7 +744,7 @@ export default function Dashboard({
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-3xl border border-slate-300 bg-slate-50 p-3">
                   <p className="text-xs font-bold text-black">{lang === "en" ? "Spent today" : "今日の使用額"}</p>
-                  <p className={`mt-2 text-xl font-black ${todayStats.todaySpent > 0 ? "text-rose-700" : "text-slate-500"}`}>
+                  <p className={`mt-2 text-xl font-black ${todayStats.todaySpent > 0 ? "text-rose-700" : "text-slate-700"}`}>
                     {todayStats.todaySpent > 0 ? formatCurrency(todayStats.todaySpent) : "—"}
                   </p>
                 </div>
@@ -1204,25 +1204,25 @@ export default function Dashboard({
           <div className="space-y-5">
             <KidsFinanceDashboard state={kidsState} />
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-[28px] border border-slate-700 bg-slate-950 p-4">
+              <div className="board-card rounded-[28px] border border-slate-300 bg-white p-4 shadow-sm">
                 <h3 className="text-base font-bold text-black">{lang === "en" ? "Kids income" : "こどもの収入"}</h3>
                 <div className="mt-3">
                   <KidsIncomeForm onAdd={(item: KidsIncome) => setKidsState((prev) => ({ ...prev, incomes: [...prev.incomes, item] }))} />
                 </div>
               </div>
-              <div className="rounded-[28px] border border-slate-700 bg-slate-950 p-4">
+              <div className="board-card rounded-[28px] border border-slate-300 bg-white p-4 shadow-sm">
                 <h3 className="text-base font-bold text-black">{lang === "en" ? "Kids expense" : "こどもの支出"}</h3>
                 <div className="mt-3">
                   <KidsExpenseForm onAdd={(item: KidsExpense) => setKidsState((prev) => ({ ...prev, expenses: [...prev.expenses, item] }))} />
                 </div>
               </div>
-              <div className="rounded-[28px] border border-slate-700 bg-slate-950 p-4">
+              <div className="board-card rounded-[28px] border border-slate-300 bg-white p-4 shadow-sm">
                 <h3 className="text-base font-bold text-black">{lang === "en" ? "Kids savings" : "こどもの貯蓄"}</h3>
                 <div className="mt-3">
                   <KidsSavingForm onAdd={(item) => setKidsState((prev) => ({ ...prev, savings: prev.savings + item.amount }))} />
                 </div>
               </div>
-              <div className="rounded-[28px] border border-slate-700 bg-slate-950 p-4">
+              <div className="board-card rounded-[28px] border border-slate-300 bg-white p-4 shadow-sm">
                 <h3 className="text-base font-bold text-black">{lang === "en" ? "Kids goal" : "こどもの目標"}</h3>
                 <div className="mt-3">
                   <KidsGoalForm

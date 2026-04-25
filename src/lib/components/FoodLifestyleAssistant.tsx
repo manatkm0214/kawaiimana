@@ -618,7 +618,7 @@ export default function FoodLifestyleAssistant({
 
             <div className="mt-3 space-y-2">
               {result.recipes.length === 0 && items.length > 0 && !loading && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-700">
                   {t("今ある食材でのレシピ候補が見つかりませんでした。食材を追加するか「今すぐ更新」を押してAIに聞いてみてください。", "No local recipe matched your pantry. Add more items or tap Refresh now to ask AI.")}
                 </p>
               )}

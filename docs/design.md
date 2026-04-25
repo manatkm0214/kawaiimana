@@ -44,6 +44,7 @@ External Services
 - 家計入力画面、ダッシュボード、設定、法務ページ、問い合わせページを表示
 - API 呼び出し結果を反映
 - 一部 UI 状態をローカルストレージに保持
+- 大人ダッシュボード配下では dashboard-clarity とグラフ用スタイルを使い、light / dark theme の両方で文字・補助ラベル・ツールチップの視認性を維持
 
 ### 3.2 Application Layer
 
@@ -202,8 +203,11 @@ CATEGORY_LABELS に英語ラベルを追加し、英語 UI でも正しく表示
 
 目標連携:
 
+- 目標画面は `GenerationGoals` の「個人 / こども / シニア」切替と、`GoalsAndDebt` の詳細タブで構成
 - 購入アドバイザーで「目標に追加」ボタンを押すと `kakeibo-personal-goals`（ローカルストレージ）へ目標を保存
-- GoalsAndDebt コンポーネントが同キーを参照するため、目標タブで進捗管理が可能
+- GoalsAndDebt コンポーネントが同キーを参照するため、目標画面の「個人」タブで進捗管理が可能
+- dark theme 時は目標画面の補助ラベルと小さな注記を明るめに補正し、可読性を確保
+- 大人ダッシュボードでは Charts Calendar AIChat FoodLifestyleAssistant を含むカード群の文字色・グラフラベル・入力欄コントラストを補正
 
 ## 10. デプロイ設計
 

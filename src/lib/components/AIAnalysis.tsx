@@ -339,7 +339,7 @@ export default function AIAnalysis({
               key={item.key}
               type="button"
               className={`rounded-lg border-2 px-3 py-2 text-sm font-bold ${
-                mode === item.key ? "border-emerald-400 bg-emerald-950 text-emerald-200" : "border-slate-600 bg-slate-800 text-black"
+                mode === item.key ? "border-emerald-400 bg-emerald-950 text-emerald-200" : "border-slate-500 bg-slate-800 text-slate-100 hover:border-slate-300 hover:text-white"
               }`}
               onClick={() => {
                 setMode(item.key);
@@ -379,7 +379,7 @@ export default function AIAnalysis({
             <button
               key={p.key}
               type="button"
-              className={`rounded-lg px-3 py-2 text-sm font-bold ${provider === p.key ? `${p.color} text-white` : "border border-slate-600 bg-slate-800 text-black"}`}
+              className={`rounded-lg px-3 py-2 text-sm font-bold ${provider === p.key ? `${p.color} text-white` : "border border-slate-500 bg-slate-800 text-slate-100 hover:border-slate-300 hover:text-white"}`}
               onClick={() => setAIProvider(p.key)}
               disabled={loading}
             >
@@ -392,7 +392,7 @@ export default function AIAnalysis({
           <span className="text-sm font-bold text-black">{t("分析の種類", "Analysis type")}</span>
           <button
             type="button"
-            className={`rounded-lg px-3 py-2 text-sm font-bold ${analysisType === "analysis" ? "bg-emerald-600 text-white" : "border border-slate-600 bg-slate-800 text-black"}`}
+            className={`rounded-lg px-3 py-2 text-sm font-bold ${analysisType === "analysis" ? "bg-emerald-600 text-white" : "border border-slate-500 bg-slate-800 text-slate-100 hover:border-slate-300 hover:text-white"}`}
             onClick={() => setAnalysisType("analysis")}
             disabled={loading}
           >
@@ -400,7 +400,7 @@ export default function AIAnalysis({
           </button>
           <button
             type="button"
-            className={`rounded-lg px-3 py-2 text-sm font-bold ${analysisType === "saving" ? "bg-cyan-600 text-white" : "border border-slate-600 bg-slate-800 text-black"}`}
+            className={`rounded-lg px-3 py-2 text-sm font-bold ${analysisType === "saving" ? "bg-cyan-600 text-white" : "border border-slate-500 bg-slate-800 text-slate-100 hover:border-slate-300 hover:text-white"}`}
             onClick={() => setAnalysisType("saving")}
             disabled={loading}
           >
@@ -408,7 +408,7 @@ export default function AIAnalysis({
           </button>
           <button
             type="button"
-            className={`rounded-lg px-3 py-2 text-sm font-bold ${analysisType === "advice" ? "bg-pink-600 text-white" : "border border-slate-600 bg-slate-800 text-black"}`}
+            className={`rounded-lg px-3 py-2 text-sm font-bold ${analysisType === "advice" ? "bg-pink-600 text-white" : "border border-slate-500 bg-slate-800 text-slate-100 hover:border-slate-300 hover:text-white"}`}
             onClick={() => setAnalysisType("advice")}
             disabled={loading}
           >
@@ -459,10 +459,10 @@ export default function AIAnalysis({
                   key={item.id}
                   type="button"
                   onClick={() => handleApplySuggestion(item.draft)}
-                  className="w-full rounded-2xl border border-cyan-800 bg-slate-900 px-4 py-3 text-left transition hover:border-cyan-500 hover:bg-slate-800"
+                  className="w-full rounded-2xl border border-cyan-700 bg-slate-900 px-4 py-3 text-left transition hover:border-cyan-400 hover:bg-slate-800"
                 >
-                  <p className="text-sm font-semibold text-black">{item.label}</p>
-                  <p className="mt-1 text-xs text-black">{item.note}</p>
+                  <p className="text-sm font-semibold text-slate-100">{item.label}</p>
+                  <p className="mt-1 text-xs text-slate-200">{item.note}</p>
                 </button>
               ))}
             </div>

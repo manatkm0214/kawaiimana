@@ -142,19 +142,19 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>セキュリティチェック報告書</h1>
-      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/26 0:21</p>
+      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/26 1:17</p>
     </header>
     <h1>セキュリティチェック報告書</h1>
 <h2>1. 実施概要</h2>
 <ul>
 <li>対象アプリ: かわいい家計簿 / <code>kakeibo-app</code></li>
 <li>本番 URL: <code>https://kawaii0214.vercel.app</code></li>
-<li>実施日: 2026-04-24（最終更新: 2026-04-26）</li>
-<li>実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認、本番 URL 確認</li>
+<li>実施日: 2026-04-26（最終更新: 2026-04-26）</li>
+<li>実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認、本番 URL 確認、本番ログ確認</li>
 </ul>
 <h2>2. 数値サマリー</h2>
 <ul>
-<li>セキュリティ総合評価: <code>91%</code></li>
+<li>セキュリティ総合評価: <code>93%</code></li>
 <li><code>npm audit</code> 脆弱性件数: <code>0</code></li>
 <li>Critical: <code>0</code></li>
 <li>High: <code>0</code></li>
@@ -163,33 +163,34 @@
 <li>Git 管理下のハードコード秘密情報検出件数: <code>0</code></li>
 <li>Git 管理下の <code>.env</code> 系ファイル件数: <code>1</code></li>
 <li>管理対象の <code>.env</code> 系ファイル: <code>.env.example</code> のみ</li>
-<li><code>POST</code> API ルート数: <code>19</code></li>
-<li><code>same-origin</code> 防御あり: <code>16 / 19</code> (<code>84.2%</code>)</li>
-<li><code>rateLimit</code> 適用あり: <code>7 / 19</code> (<code>36.8%</code>)</li>
+<li><code>POST</code> API ルート数: <code>17</code></li>
+<li><code>same-origin</code> 防御あり: <code>16 / 17</code> (<code>94.1%</code>)</li>
+<li><code>rateLimit</code> 適用あり: <code>7 / 17</code> (<code>41.2%</code>)</li>
 <li>ビルド失敗件数: <code>0</code></li>
 <li>非ブロッキング build warning 件数: <code>2</code></li>
+<li>直近 1 時間の production error log 件数: <code>0</code></li>
 </ul>
 <h2>3. 総合評価の算出方法</h2>
 <ul>
 <li>今回の総合評価は、静的検査とビルド検証の結果を 100 点満点で重み付けして算出</li>
 <li>依存脆弱性: <code>30 / 30</code>（overrides で postcss を 8.5.10+ に固定し 0 件へ）</li>
 <li>シークレット管理: <code>25 / 25</code></li>
-<li>リクエスト起点保護: <code>16.8 / 20</code></li>
-<li>レート制限: <code>3.7 / 10</code></li>
+<li>リクエスト起点保護: <code>18.8 / 20</code></li>
+<li>レート制限: <code>4.1 / 10</code></li>
 <li>品質ゲート: <code>15 / 15</code></li>
-<li>合計: <code>90.5 / 100</code> → 四捨五入して <code>91%</code></li>
+<li>合計: <code>92.9 / 100</code> → 四捨五入して <code>93%</code></li>
 </ul>
 <h3>3.1 配点の考え方</h3>
 <ul>
 <li>依存脆弱性は <code>npm audit</code> 結果をそのまま反映。<code>package.json</code> の <code>overrides</code> で postcss を <code>^8.5.10</code> に固定したことで <code>0 件</code> となり満点</li>
 <li>シークレット管理は Git 管理下のハードコード秘密情報 <code>0 件</code> を満点評価</li>
-<li>リクエスト起点保護は <code>same-origin</code> を基本指標とし、<code>16 / 19</code> のため <code>84.2%</code> を 20 点へ按分</li>
-<li>レート制限は <code>7 / 19</code> の適用率 <code>36.8%</code> を 10 点へ按分</li>
+<li>リクエスト起点保護は <code>same-origin</code> を基本指標とし、<code>16 / 17</code> のため <code>94.1%</code> を 20 点へ按分</li>
+<li>レート制限は <code>7 / 17</code> の適用率 <code>41.2%</code> を 10 点へ按分</li>
 <li>品質ゲートは ESLint、TypeScript、<code>next build</code> が通過しているため満点</li>
 </ul>
 <h3>3.2 解釈</h3>
 <ul>
-<li><code>91%</code> は「静的・構成・ビルド観点では高水準」という評価</li>
+<li><code>93%</code> は「静的・構成・ビルド観点では高水準」という評価</li>
 <li>主な改善余地は <code>rateLimit</code> の適用拡大と、外部からの動的ペネトレーションテスト未実施の 2 点</li>
 </ul>
 <h2>4. 実施コマンド</h2>
@@ -200,14 +201,13 @@
 <li><code>npm run build</code></li>
 <li><code>git grep -n -I -E &quot;(AIza...|sk_live_...|PRIVATE KEY...|AKIA...|ghp_...)&quot; -- .</code></li>
 <li><code>git ls-files .env .env.local .env.example .env.preview.local .vercel</code></li>
+<li><code>vercel logs --environment production --level error --since 1h --limit 20 --no-follow --no-branch</code></li>
 <li>API ルート走査:</li>
 </ul>
-<pre><code class="language-text">POST_ROUTES=19
+<pre><code class="language-text">POST_ROUTES=17
 SAME_ORIGIN=16
 RATE_LIMITED=7
 MISSING_SAME_ORIGIN:
-src/app/api/auth/google/callback/route.ts
-src/app/api/auth/line/callback/route.ts
 src/app/api/auth/send-email/route.ts</code></pre>
 <h2>5. 結果詳細</h2>
 <h3>5.1 依存パッケージ監査</h3>
@@ -217,7 +217,7 @@ src/app/api/auth/send-email/route.ts</code></pre>
 <li><code>node_modules/next/node_modules/postcss</code> が 8.4.31 から 8.5.10+ に更新され、脆弱性が解消された</li>
 <li>再実行後の <code>npm audit</code> は <code>0 vulnerabilities</code></li>
 <li><code>next build</code> も引き続き成功（互換性に問題なし）</li>
-<li>現時点での依存数は約 <code>582</code>（production 依存 <code>176</code>）</li>
+<li>現時点での依存数は約 <code>581</code>（production 依存 <code>176</code>）</li>
 </ul>
 <h3>5.2 シークレット管理</h3>
 <ul>
@@ -227,11 +227,11 @@ src/app/api/auth/send-email/route.ts</code></pre>
 </ul>
 <h3>5.3 API 防御</h3>
 <ul>
-<li><code>POST</code> を持つ API ルートは <code>19</code></li>
+<li><code>POST</code> を持つ API ルートは <code>17</code></li>
 <li>そのうち <code>16</code> ルートに <code>requireSameOrigin()</code> が入っており、一般的なブラウザ起点の CSRF 対策を実施</li>
 <li><code>7</code> ルートに <code>rateLimit()</code> が入り、短時間連打の抑制を実施</li>
-<li>以下 3 ルートは <code>same-origin</code> の代わりに別の保護手段を採用:</li>
-<p>- <code>auth/google/callback</code>: Auth0 / OAuth PKCE フロー（state parameter 検証）で保護 - <code>auth/line/callback</code>: Auth0 / OAuth PKCE フロー（state parameter 検証）で保護 - <code>auth/send-email</code>: Supabase hook の JWT / 署名検証で保護</p>
+<li><code>auth/send-email</code> は <code>same-origin</code> の代わりに Supabase hook の JWT / 署名検証で保護</li>
+<li>Google / LINE の callback ルートは現在 <code>GET</code> ハンドラで、今回の <code>POST</code> API 集計対象外</li>
 </ul>
 <h3>5.4 品質ゲート</h3>
 <ul>
@@ -239,6 +239,12 @@ src/app/api/auth/send-email/route.ts</code></pre>
 <li>TypeScript: <code>0</code> errors</li>
 <li><code>next build</code>: 成功</li>
 <li>ビルド警告は Auth0 依存からの warning が <code>2</code> 件あるが、出荷ブロッカーではない</li>
+<li>目標画面と大人ダッシュボードのコントラスト改善後も、ESLint / TypeScript / build を再実行して回帰なしを確認</li>
+</ul>
+<h3>5.5 本番ログ確認</h3>
+<ul>
+<li><code>vercel logs --environment production --level error --since 1h --limit 20 --no-follow --no-branch</code> の結果、直近 1 時間の production error log は <code>0 件</code></li>
+<li>本番エイリアス <code>https://kawaii0214.vercel.app</code> は継続して有効</li>
 </ul>
 <h2>6. 残課題と所見</h2>
 <ul>
@@ -252,7 +258,7 @@ src/app/api/auth/send-email/route.ts</code></pre>
 <li>今回の実施範囲では、<code>npm audit</code> 脆弱性は <code>0 件</code>（postcss override 適用後）</li>
 <li>重大な秘密情報の Git 混入も検出されず</li>
 <li>ビルド、型検査、Lint を通過しており、現時点のコードベースはデプロイ可能な状態</li>
-<li>総合評価は <code>91%</code> で、本番運用に耐える高水準な状態</li>
+<li>総合評価は <code>93%</code> で、本番運用に耐える高水準な状態</li>
 </ul>
   </main>
 </body>
