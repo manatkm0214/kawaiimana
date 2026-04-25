@@ -22,6 +22,7 @@ import { KidsIncomeForm, type KidsIncome } from "./KidsIncomeForm";
 import { KidsSavingForm } from "./KidsSavingForm";
 import { KidsGoalForm } from "./KidsGoalForm";
 import type { KidsSavingsGoal } from "../types/kids-finance";
+import PurchaseAdvisor from "./PurchaseAdvisor";
 import type { Budget, Profile, Transaction } from "@/lib/utils";
 import { formatCurrency, getCategoryLabel, PASSIVE_INCOME_CATEGORIES } from "@/lib/utils";
 import { useLang } from "@/lib/hooks/useLang";
@@ -1185,6 +1186,7 @@ export default function Dashboard({
               onGenerationChange={setGoalGeneration}
             />
             {goalGeneration === "general" && <GoalsAndDebt transactions={transactions} currentMonth={currentMonth} />}
+            <PurchaseAdvisor transactions={transactions} currentMonth={currentMonth} />
           </div>
         )}
         {activePage === "ai" && (

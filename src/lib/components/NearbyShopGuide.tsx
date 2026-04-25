@@ -66,6 +66,9 @@ export default function NearbyShopGuide({
   const [lastSource, setLastSource] = useState<"area" | "current" | null>(null);
   const [budgetLimit, setBudgetLimit] = useState("");
   const [provider, setProvider] = useState<SearchProvider | null>(null);
+  const [marketItem, setMarketItem] = useState("");
+  const [marketLoading, setMarketLoading] = useState(false);
+  const [marketResult, setMarketResult] = useState("");
 
   const stats = useMemo(() => {
     const monthly = transactions.filter((item) => item.date.startsWith(currentMonth));
@@ -203,6 +206,31 @@ export default function NearbyShopGuide({
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 },
     );
+  }
+
+  async function queryShopMarketRate() {
+    if (!marketItem.trim()) return;
+    setMarketLoading(true);
+    setMarketResult("");
+    const shopName = shops[0]?.name ?? "";
+    const q = [
+      area.trim() && `${area.trim()}`,
+      shopName && `${shopName}で`,
+      `「${marketItem.trim()}」の相場・目安価格（日本円）を教えてください。最低・目安・高めの3段階を数字で示し、2〜3行で簡潔にまとめてください。`,
+    ].filter(Boolean).join("");
+    try {
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lang, messages: [{ role: "user", content: q }] }),
+      });
+      const data = (await res.json()) as { reply?: string };
+      setMarketResult(data.reply ?? t("相場を取得できませんでした。", "Could not fetch market rate."));
+    } catch {
+      setMarketResult(t("通信エラーが発生しました。", "Connection error."));
+    } finally {
+      setMarketLoading(false);
+    }
   }
 
   async function findAreaShops() {
@@ -405,6 +433,33 @@ export default function NearbyShopGuide({
       </div>
 
       {status && <div className="mt-3 rounded-2xl border border-slate-400 bg-cyan-50 px-3 py-2 text-sm text-black">{status}</div>}
+
+      {shops.length > 0 && (
+        <div className="mt-3 rounded-2xl board-tile border p-3">
+          <p className="text-sm font-black text-black">{t("この店での相場をAIに聞く", "Ask AI for prices at this store")}</p>
+          <div className="mt-2 flex gap-2">
+            <input
+              value={marketItem}
+              onChange={(e) => setMarketItem(e.target.value)}
+              placeholder={t("例: 牛乳1L / 洗剤 / トマト", "e.g. Milk 1L / Detergent")}
+              className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-black outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+            />
+            <button
+              type="button"
+              onClick={() => void queryShopMarketRate()}
+              disabled={!marketItem.trim() || marketLoading}
+              className="shrink-0 rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-400 disabled:opacity-50"
+            >
+              {marketLoading ? t("聞いています…", "Asking…") : t("聞く", "Ask")}
+            </button>
+          </div>
+          {marketResult && (
+            <div className="mt-2 rounded-xl border border-cyan-200 bg-cyan-50 p-3 text-sm text-black whitespace-pre-wrap">
+              {marketResult}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mt-3 flex-1 space-y-2 overflow-hidden">
         {shops.length === 0 ? (
