@@ -142,15 +142,16 @@
     <header>
       <p class="eyebrow">Kakeibo App</p>
       <h1>セキュリティチェック報告書</h1>
-      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/26 1:49</p>
+      <p class="meta">生成元: docs/security-check.md | 生成日時: 2026/04/27</p>
     </header>
     <h1>セキュリティチェック報告書</h1>
 <h2>1. 実施概要</h2>
 <ul>
 <li>対象アプリ: かわいい家計簿 / <code>kakeibo-app</code></li>
 <li>本番 URL: <code>https://kawaii0214.vercel.app</code></li>
-<li>実施日: 2026-04-26（最終更新: 2026-04-26 01:59、本番デプロイ反映: 2026-04-26）</li>
-<li>実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認、本番 URL 確認、本番ログ確認、全体コントラスト・文字色一括統一CSS修正、本番デプロイ反映</li>
+<li>ドキュメント更新日: 2026-04-27</li>
+<li>直近の検証結果反映日: 2026-04-27</li>
+<li>実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認、コードセキュリティレビュー（ブランチ <code>kawaii0214</code>）</li>
 </ul>
 <h2>2. 数値サマリー</h2>
 <ul>
@@ -158,41 +159,28 @@
 <li><code>npm audit</code> 脆弱性件数: <code>0</code></li>
 <li>Critical: <code>0</code></li>
 <li>High: <code>0</code></li>
-<li>Moderate: <code>0</code>（<code>package.json</code> の <code>overrides.postcss</code> に <code>^8.5.10</code> を追加して解消）</li>
+<li>Moderate: <code>0</code></li>
 <li>Low: <code>0</code></li>
 <li>Git 管理下のハードコード秘密情報検出件数: <code>0</code></li>
 <li>Git 管理下の <code>.env</code> 系ファイル件数: <code>1</code></li>
 <li>管理対象の <code>.env</code> 系ファイル: <code>.env.example</code> のみ</li>
 <li><code>POST</code> API ルート数: <code>17</code></li>
-<li><code>same-origin</code> 防御あり: <code>16 / 17</code> (<code>94.1%</code>)</li>
-<li><code>rateLimit</code> 適用あり: <code>7 / 17</code> (<code>41.2%</code>)</li>
+<li><code>same-origin</code> 防御あり: <code>16 / 17</code></li>
+<li><code>rateLimit</code> 適用あり: <code>7 / 17</code></li>
 <li>ビルド失敗件数: <code>0</code></li>
-<li>非ブロッキング build warning 件数: <code>2</code></li>
-<li>直近 1 時間の production error log 件数: <code>0</code></li>
-<li>2026-04-26: 全画面・全要素の文字色を黒・極太で一括統一し最大コントラストを実現</li>
+<li>非ブロッキング build warning 件数: <code>3</code>（依存由来: <code>@auth0/nextjs-auth0</code> × 1、<code>jose</code> Edge Runtime × 2）</li>
+<li>TypeScript エラー件数: <code>0</code></li>
+<li>ESLint エラー / 警告件数: <code>0</code></li>
 </ul>
 <h2>3. 総合評価の算出方法</h2>
 <ul>
 <li>今回の総合評価は、静的検査とビルド検証の結果を 100 点満点で重み付けして算出</li>
-<li>依存脆弱性: <code>30 / 30</code>（overrides で postcss を 8.5.10+ に固定し 0 件へ）</li>
+<li>依存脆弱性: <code>30 / 30</code></li>
 <li>シークレット管理: <code>25 / 25</code></li>
 <li>リクエスト起点保護: <code>18.8 / 20</code></li>
 <li>レート制限: <code>4.1 / 10</code></li>
 <li>品質ゲート: <code>15 / 15</code></li>
 <li>合計: <code>92.9 / 100</code> → 四捨五入して <code>93%</code></li>
-</ul>
-<h3>3.1 配点の考え方</h3>
-<ul>
-<li>依存脆弱性は <code>npm audit</code> 結果をそのまま反映。<code>package.json</code> の <code>overrides</code> で postcss を <code>^8.5.10</code> に固定したことで <code>0 件</code> となり満点</li>
-<li>シークレット管理は Git 管理下のハードコード秘密情報 <code>0 件</code> を満点評価</li>
-<li>リクエスト起点保護は <code>same-origin</code> を基本指標とし、<code>16 / 17</code> のため <code>94.1%</code> を 20 点へ按分</li>
-<li>レート制限は <code>7 / 17</code> の適用率 <code>41.2%</code> を 10 点へ按分</li>
-<li>品質ゲートは ESLint、TypeScript、<code>next build</code> が通過しているため満点</li>
-</ul>
-<h3>3.2 解釈</h3>
-<ul>
-<li><code>93%</code> は「静的・構成・ビルド観点では高水準」という評価</li>
-<li>主な改善余地は <code>rateLimit</code> の適用拡大と、外部からの動的ペネトレーションテスト未実施の 2 点</li>
 </ul>
 <h2>4. 実施コマンド</h2>
 <ul>
@@ -202,10 +190,9 @@
 <li><code>npm run build</code></li>
 <li><code>git grep -n -I -E &quot;(AIza...|sk_live_...|PRIVATE KEY...|AKIA...|ghp_...)&quot; -- .</code></li>
 <li><code>git ls-files .env .env.local .env.example .env.preview.local .vercel</code></li>
-<li><code>vercel logs --environment production --level error --since 1h --limit 20 --no-follow --no-branch</code></li>
-<li>API ルート走査:</li>
 </ul>
-<pre><code class="language-text">POST_ROUTES=17
+<p>API ルート走査結果:</p>
+<pre><code>POST_ROUTES=17
 SAME_ORIGIN=16
 RATE_LIMITED=7
 MISSING_SAME_ORIGIN:
@@ -213,53 +200,83 @@ src/app/api/auth/send-email/route.ts</code></pre>
 <h2>5. 結果詳細</h2>
 <h3>5.1 依存パッケージ監査</h3>
 <ul>
-<li>前回（2026-04-25）は <code>postcss &lt;8.5.10</code> に起因する Moderate 4 件が存在していた</li>
-<li><code>package.json</code> の <code>overrides</code> に <code>&quot;postcss&quot;: &quot;^8.5.10&quot;</code> を追加し <code>npm install</code> を実行</li>
-<li><code>node_modules/next/node_modules/postcss</code> が 8.4.31 から 8.5.10+ に更新され、脆弱性が解消された</li>
-<li>再実行後の <code>npm audit</code> は <code>0 vulnerabilities</code></li>
-<li><code>next build</code> も引き続き成功（互換性に問題なし）</li>
-<li>現時点での依存数は約 <code>581</code>（production 依存 <code>176</code>）</li>
+<li><code>npm audit</code> は <code>0 vulnerabilities</code></li>
+<li><code>postcss</code> は <code>package.json</code> の <code>overrides</code> で <code>^8.5.10</code> に固定</li>
+<li><code>next build</code> との互換性問題は確認されていない</li>
 </ul>
 <h3>5.2 シークレット管理</h3>
 <ul>
-<li>Git 管理下ファイルに対する静的スキャンでは、典型的な API キーや秘密鍵のハードコードは検出されず</li>
-<li><code>.env</code>、<code>.env.local</code>、<code>.vercel</code> は Git 管理対象外</li>
-<li>Git 管理下に残っている環境変数ファイルは <code>.env.example</code> のみ</li>
+<li>Git 管理下ファイルへの静的スキャンで典型的な秘密情報の混入は未検出</li>
+<li><code>.env.local</code> と <code>.vercel/</code> は Git 管理対象外</li>
+<li>Git 管理下に残る環境変数ファイルは <code>.env.example</code> のみ</li>
 </ul>
 <h3>5.3 API 防御</h3>
 <ul>
 <li><code>POST</code> を持つ API ルートは <code>17</code></li>
-<li>そのうち <code>16</code> ルートに <code>requireSameOrigin()</code> が入っており、一般的なブラウザ起点の CSRF 対策を実施</li>
-<li><code>7</code> ルートに <code>rateLimit()</code> が入り、短時間連打の抑制を実施</li>
-<li><code>auth/send-email</code> は <code>same-origin</code> の代わりに Supabase hook の JWT / 署名検証で保護</li>
-<li>Google / LINE の callback ルートは現在 <code>GET</code> ハンドラで、今回の <code>POST</code> API 集計対象外</li>
+<li>そのうち <code>16</code> ルートで <code>requireSameOrigin()</code> を適用</li>
+<li><code>7</code> ルートで <code>rateLimit()</code> を適用</li>
+<li><code>auth/send-email</code> は same-origin ではなく署名 / JWT 検証ベースで保護</li>
 </ul>
 <h3>5.4 品質ゲート</h3>
 <ul>
 <li>ESLint: <code>0</code> errors / <code>0</code> warnings</li>
 <li>TypeScript: <code>0</code> errors</li>
 <li><code>next build</code>: 成功</li>
-<li>ビルド警告は Auth0 依存からの warning が <code>2</code> 件あるが、出荷ブロッカーではない</li>
-<li>目標画面と大人ダッシュボードのコントラスト改善後も、ESLint / TypeScript / build を再実行して回帰なしを確認</li>
+<li>build warning <code>3</code> 件は依存由来（<code>@auth0/nextjs-auth0</code> dpopUtils × 1、<code>jose</code> Edge Runtime × 2）で、現時点で出荷ブロッカーではない</li>
 </ul>
-<h3>5.5 本番ログ確認</h3>
+<h2>6. 現行実装に即したセキュリティメモ</h2>
+<h3>6.1 ローカル保存される補助状態</h3>
+<p>次の値はブラウザ <code>localStorage</code> に保存されます。</p>
 <ul>
-<li><code>vercel logs --environment production --level error --since 1h --limit 20 --no-follow --no-branch</code> の結果、直近 1 時間の production error log は <code>0 件</code></li>
-<li>本番エイリアス <code>https://kawaii0214.vercel.app</code> は継続して有効</li>
+<li>ローン一覧</li>
+<li>先取積み立て一覧</li>
+<li>個人目標一覧</li>
+<li>徳ポイント用チケット価値</li>
+<li>使用済みチケット数</li>
+<li>固定費見直しの確認済み ID</li>
+<li>固定費見直しの月別非表示 ID</li>
 </ul>
-<h2>6. 残課題と所見</h2>
+<p>評価:</p>
 <ul>
-<li><code>rateLimit</code> は全 <code>POST</code> API に一律ではないため、将来的には対象拡大の余地あり</li>
-<li>Auth0 の <code>dpopUtils.js</code> に起因する build warning は依存側の挙動で、現状は機能阻害なし</li>
-<li>今回は静的検査とビルド検証が中心であり、外部からの動的ペネトレーションテストまでは未実施</li>
-<li>LINE / Google OAuth の Callback URL は本番 URL に合わせて各開発者コンソールへ登録が必要</li>
+<li>これらは UI 補助データであり、サーバー保存の主要家計データとは分離されている</li>
+<li>同一ブラウザ依存であるため、共有端末利用時はブラウザプロファイルの分離が望ましい</li>
 </ul>
-<h2>7. 総合判定</h2>
+<h3>6.2 Preview Deployment の扱い</h3>
 <ul>
-<li>今回の実施範囲では、<code>npm audit</code> 脆弱性は <code>0 件</code>（postcss override 適用後）</li>
-<li>重大な秘密情報の Git 混入も検出されず</li>
-<li>ビルド、型検査、Lint を通過しており、現時点のコードベースはデプロイ可能な状態</li>
-<li>総合評価は <code>93%</code> で、本番運用に耐える高水準な状態</li>
+<li>Vercel Preview Deployment はデモ / 検証環境として利用する</li>
+<li>本番シークレットと Preview シークレットは分けて管理すること</li>
+<li>OAuth の Callback URL も Preview / Production を混同しないこと</li>
+</ul>
+<h3>6.3 ブラウザ互換</h3>
+<ul>
+<li><code>input[type="month"]</code> はブラウザ差異がある</li>
+<li>専用ピッカー非対応時でも <code>YYYY-MM</code> 手入力で扱える運用にしている</li>
+</ul>
+<h2>7. コードセキュリティレビュー結果（2026-04-27）</h2>
+<p>ブランチ <code>kawaii0214</code> の差分に対して、以下の4候補を詳細分析しました。</p>
+<table>
+<thead><tr><th>候補</th><th>ファイル</th><th>判定</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td>AIプロンプトへのユーザーデータ埋め込み</td><td><code>src/app/api/ai/route.ts</code></td><td>✅ 問題なし</td><td>同一ユーザーの自データのみ対象。AIプロンプトへのユーザーデータ埋め込みは脆弱性非該当</td></tr>
+<tr><td><code>JSON.parse</code> try/catch 欠如</td><td><code>FoodLifestyleAssistant.tsx:251</code></td><td>✅ 問題なし</td><td>Node.js 12+ で <code>__proto__</code> pollution 不可。クラッシュは DoS 除外対象</td></tr>
+<tr><td>Puppeteer <code>--no-sandbox</code></td><td><code>scripts/export-*.js</code></td><td>✅ 問題なし</td><td>信頼済みローカル HTML のみ処理。外部入力なし。ハードニング欠如は脆弱性非該当</td></tr>
+<tr><td>財務データの外部 AI API 送信</td><td><code>src/app/api/ai/route.ts</code></td><td>✅ 問題なし</td><td>認証済みユーザー自身の集計データ。PII・シークレット含まず。意図した機能</td></tr>
+</tbody>
+</table>
+<p><strong>判定: 高信頼度の脆弱性 0 件</strong></p>
+<h2>8. 残課題と所見</h2>
+<ul>
+<li><code>rateLimit</code> は全 <code>POST</code> API 一律ではないため、対象拡大の余地あり</li>
+<li>依存由来の build warning は継続監視が必要</li>
+<li>外部からの動的ペネトレーションテストは未実施</li>
+<li>ローカル保存データは端末依存であるため、将来的にはサーバー同期の設計余地がある</li>
+</ul>
+<h2>9. 総合判定</h2>
+<ul>
+<li>現在の確認範囲では <code>npm audit</code> 脆弱性は <code>0 件</code></li>
+<li>重大な秘密情報の Git 混入は未検出</li>
+<li>build、型検査、Lint の品質ゲートは通過済み</li>
+<li>総合評価は <code>93%</code> で、本番運用に耐える高水準を維持している</li>
 </ul>
   </main>
 </body>

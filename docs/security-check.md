@@ -82,7 +82,6 @@ src/app/api/auth/send-email/route.ts
 
 - ESLint: `0` errors / `0` warnings
 - TypeScript: `0` errors
-- ESLint: `0` errors / `0` warnings
 - `next build`: 成功
 - build warning `3` 件は依存由来（`@auth0/nextjs-auth0` dpopUtils × 1、`jose` Edge Runtime × 2）で、現時点で出荷ブロッカーではない
 
