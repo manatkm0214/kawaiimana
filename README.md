@@ -1,18 +1,42 @@
 # かわいい家計簿
 
-収支記録・予算管理・AI相談・お店案内をひとつにまとめた家計簿 Web アプリです。
+収支記録、予算管理、目標管理、AI 相談、周辺のお店案内を 1 つにまとめた Next.js 製の家計簿アプリです。
 
 本番 URL: `https://kawaii0214.vercel.app`
 
-## 主な機能
+## アプリ概要
 
-- 家計データの入力、集計、可視化（ゲーム・推し活・美容衣服カテゴリ含む）
-- 予算プリセットと予算超過 / トレードオフ支援
-- AI 分析、AI チャット、生活支援
-- お店案内 / 周辺店舗検索（Google Maps 優先・OSM フォールバック）
-- 購入アドバイザー（労働日数・貯蓄月数・ローン判定・目標連携）
+- 家計データの入力、月次集計、カテゴリ可視化
+- 予算プリセット、予算超過確認、トレードオフ支援
+- 目標タブ内でのローン管理、先取積み立て、個人目標、固定費見直し、徳ポイント管理
+- 購入アドバイザーによる大きな買い物判断と個人目標連携
+- AI 分析、AI チャット、AI 節約相談、AI 店案内
+- Google Maps 優先 / OpenStreetMap フォールバックの周辺店舗検索
 - Google / LINE / メール認証
-- PDF 出力、問い合わせ、設定変更
+- PDF 出力、問い合わせ、表示カスタマイズ
+
+## 目標タブの構成
+
+ダッシュボードの「目標」周辺は次の 3 レイヤで構成されています。
+
+- `GenerationGoals`: 「個人 / こども / シニア」の世代切替
+- `GoalsAndDebt`: 一般向けの詳細管理 UI
+- `PurchaseAdvisor`: 価格判断と個人目標への追加
+
+`GoalsAndDebt` では次の 5 タブを扱います。
+
+- ローン / 借入: 残高、月返済、完済予定、返済進捗
+- 先取積み立て: 旅行、車検、家電など予定支出の積み立て
+- 個人目標: ご褒美や推し活向けの目標管理
+- 固定費見直し: 月内の固定費候補をレビュー、確認済み化、月単位で非表示
+- 徳ポイント: 月別ポイント履歴、獲得チケット数、チケット価値の調整
+
+## 環境
+
+- Production: `https://kawaii0214.vercel.app`
+- Demo / Preview: Vercel Preview Deployment を利用
+  - `src/app/dashboard/page.tsx` にはダミーデータで UI を確認できるデモ用ダッシュボード実装があります
+  - デモ確認時は preview デプロイ URL または `/dashboard` を利用します
 
 ## 技術スタック
 
@@ -20,22 +44,24 @@
 |------|----------|
 | フレームワーク | Next.js 15 (App Router) |
 | 言語 | TypeScript |
-| DB / 認証 | Supabase / Auth0 |
-| ホスティング | Vercel |
-| 地図・店舗検索 | Google Maps API（優先）/ OpenStreetMap（フォールバック） |
-| メール | Resend |
+| UI | React 18 / Tailwind CSS 4 |
+| 認証 | Auth0 |
+| データ | Supabase |
 | AI | OpenAI / Gemini |
+| 地図・店舗検索 | Google Maps API / OpenStreetMap |
+| メール | Resend |
+| ホスティング | Vercel |
 
-## 開発環境
+## ローカル開発
 
 ```bash
 npm install
 cp .env.example .env.local
-# .env.local に必要な環境変数を設定する
+# .env.local に必要な値を設定
 npm run dev
 ```
 
-ブラウザ: `http://localhost:3000`
+ローカル URL: `http://localhost:3000`
 
 ## 検証コマンド
 
@@ -45,12 +71,12 @@ node ./node_modules/typescript/bin/tsc --noEmit
 ./node_modules/.bin/eslint.cmd .
 ```
 
-## ブランチ運用
+## デプロイ運用
 
-| ブランチ | 用途 |
-|----------|------|
-| `main` | 本番デプロイ（Vercel 自動デプロイ） |
-| `kawaii0214` | 開発ブランチ |
+- `main`: 本番用。Vercel の Production Deployment を想定
+- 開発中の確認: Vercel Preview Deployment をデモ環境として利用
+- `.env.local` はローカル専用
+- 本番 / プレビュー用の環境変数は Vercel 側で管理
 
 ## ドキュメント
 
@@ -59,8 +85,8 @@ node ./node_modules/typescript/bin/tsc --noEmit
 - [取り扱い説明書](./docs/user-manual.md)
 - [セキュリティチェック報告書](./docs/security-check.md)
 
-## 注意
+## 補足
 
-- 実シークレットは `.env.local` のみで管理してください
-- `.vercel/` と `.env*` は Git 管理対象外です
-- Supabase の migration は SQL Editor で順番に適用してください
+- ローン、積み立て、個人目標、徳ポイント、固定費見直しの一部状態はブラウザの `localStorage` に保存されます
+- `input[type="month"]` は一部ブラウザで専用ピッカーが出ないため、必要に応じて `YYYY-MM` 形式で手入力してください
+- `.env*` と `.vercel/` は Git に含めません

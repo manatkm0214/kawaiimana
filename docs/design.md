@@ -2,15 +2,15 @@
 
 ## 1. システム概要
 
-本システムは、家計の記録、分析、予算管理、AI 支援を 1 つの Web アプリで提供する Next.js ベースの家計簿です。  
-フロントエンドと API を同一リポジトリの App Router で管理し、データは Supabase、認証は Auth0、配信は Vercel を利用します。
+本システムは、家計の記録、分析、目標管理、AI 支援を 1 つの Web アプリにまとめた Next.js ベースの家計簿です。  
+フロントエンドと API は同一リポジトリの App Router で管理し、主要データは Supabase、認証は Auth0、配信は Vercel を利用します。
 
 ## 2. 全体構成
 
 ```text
 Browser
   ├─ App Router UI
-  ├─ Dashboard / Input / Settings / Contact
+  ├─ Dashboard / Input / AI / Goals / Settings / Contact
   └─ Fetch to /api/*
 
 Next.js App Router
@@ -24,12 +24,11 @@ Next.js App Router
 External Services
   ├─ Supabase                 profiles / transactions / budgets
   ├─ Auth0                    Google / LINE / メール認証
-  ├─ OpenAI / Gemini 等       AI 機能
-  ├─ Google Maps API          周辺店舗検索 / Geocoding（優先）
-  ├─ Nominatim (OSM)          エリアジオコーディング（フォールバック）
-  ├─ Overpass API (OSM)       周辺店舗検索（フォールバック）
+  ├─ OpenAI / Gemini          AI 機能
+  ├─ Google Maps API          店舗検索 / Geocoding（優先）
+  ├─ Nominatim / Overpass     地図検索フォールバック
   ├─ Resend                   メール送信
-  └─ Vercel                   Hosting / Build / Deploy
+  └─ Vercel                   Preview / Production Deploy
 ```
 
 ## 3. レイヤ設計
@@ -41,10 +40,9 @@ External Services
 
 役割:
 
-- 家計入力画面、ダッシュボード、設定、法務ページ、問い合わせページを表示
-- API 呼び出し結果を反映
-- 一部 UI 状態をローカルストレージに保持
-- 大人ダッシュボード配下では dashboard-clarity とグラフ用スタイルを使い、light / dark theme の両方で文字・補助ラベル・ツールチップの視認性を維持
+- 入力画面、ダッシュボード、設定、法務ページ、問い合わせページを表示
+- API 結果とローカル状態を統合して画面に反映
+- 一部の軽量な目標管理状態を `localStorage` に保持
 
 ### 3.2 Application Layer
 
@@ -52,9 +50,9 @@ External Services
 
 役割:
 
-- 認証済みユーザーのリクエストを受けて入力検証を実行
-- same-origin、rate limit、認可を通した上で業務処理を実行
-- 外部 API と DB の橋渡しを行う
+- 認証済みリクエストの入力検証
+- same-origin、rate limit、認可の適用
+- 外部 API、DB、メール送信のオーケストレーション
 
 ### 3.3 Domain / Utility Layer
 
@@ -64,7 +62,11 @@ External Services
 
 役割:
 
-- 家計サマリー、予算差分、固定費判定、生活支援ロジックの計算
+- 家計サマリー計算
+- 予算差分計算
+- 固定費見直し候補抽出
+- 徳ポイント算出
+- 購入判断支援
 
 ### 3.4 Infrastructure Layer
 
@@ -75,12 +77,29 @@ External Services
 
 役割:
 
-- Supabase 管理クライアント
+- Supabase 接続
 - Auth0 セッション処理
-- JSON 読み取り制限、same-origin、rate limit
+- same-origin、JSON サイズ制限、rate limit
 - SSRF 対策
 
-## 4. データ設計
+## 4. ダッシュボード設計
+
+ダッシュボードは複数の表示モードを持つ。
+
+- 一般向けダッシュボード
+- こども向けダッシュボード
+- シニア向けダッシュボード
+- 年次、基準、AI 関連タブ
+
+目標周辺は次の構成:
+
+- `GenerationGoals`: 世代別 UI 切替
+- `GoalsAndDebt`: 一般向けの詳細目標管理
+- `PurchaseAdvisor`: 価格判断と目標追加
+
+`/dashboard` にはダミーデータで画面確認できるデモ表示がある。
+
+## 5. データ設計
 
 主要テーブル:
 
@@ -94,148 +113,211 @@ External Services
 - 予算トレードオフ
 - 引き落とし予約
 
-個人目標（ローカルストレージ）:
+ブラウザローカル保持:
 
-- キー: `kakeibo-personal-goals`
-- 保持項目: `id`, `name`, `emoji`, `targetAmount`, `currentAmount`, `memo`, `status`, `createdAt`
-- GoalsAndDebt コンポーネントおよび PurchaseAdvisor コンポーネントが同キーを共有して読み書きする
+- `kakeibo-debts`
+- `kakeibo-sinking-funds`
+- `kakeibo-personal-goals`
+- `kakeibo-ticket-value`
+- `kakeibo-tickets-used`
+- `kakeibo-fixed-cost-flags-reviewed`
+- `kakeibo-fixed-cost-flags-hidden`
 
-基本方針:
+設計意図:
 
-- ユーザー単位でデータを分離
-- Supabase の RLS を前提にする
-- サーバー側では Auth0 セッションから解決した `supabaseUserId` を利用して書き込み対象を固定する
+- 高頻度で編集される軽量な目標補助データは、即時操作性を優先して `localStorage` を利用
+- 取引や予算など共有前提のデータはサーバー側で管理
 
-## 5. 認証設計
+## 6. GoalsAndDebt 設計
+
+`src/lib/components/GoalsAndDebt.tsx` は一般向け目標画面の中心コンポーネント。
+
+タブ構成:
+
+- `debt`
+- `sinking`
+- `goals`
+- `fixedCostFlags`
+- `virtue`
+
+### 6.1 ローン管理
+
+保持項目:
+
+- `id`
+- `name`
+- `type`
+- `totalAmount`
+- `remainingAmount`
+- `monthlyPayment`
+- `interestRate`
+- `memo`
+
+振る舞い:
+
+- 完済予定月を `remainingAmount / monthlyPayment` から算出
+- 返済率を進捗バーで表示
+- 「返済」操作は残高を月返済額ぶん減算
+
+### 6.2 先取積み立て
+
+保持項目:
+
+- `name`
+- `emoji`
+- `targetAmount`
+- `currentAmount`
+- `targetDate`
+- `memo`
+- `status`
+- `createdAt`
+- `completedAt`
+- `archivedAt`
+
+振る舞い:
+
+- 目標達成後は completed 扱い
+- 一定経過後または明示操作で archived へ移行
+- restore により active / completed へ戻せる
+
+### 6.3 個人目標
+
+保持項目:
+
+- `name`
+- `emoji`
+- `targetAmount`
+- `currentAmount`
+- `memo`
+- `status`
+- `createdAt`
+- `completedAt`
+- `archivedAt`
+
+振る舞い:
+
+- 手動加算
+- チケット加算
+- 購入アドバイザーからの追加
+- 達成後の archived 管理
+
+### 6.4 購入アドバイザー連携
+
+- `PurchaseAdvisor` が `kakeibo-personal-goals` に新規目標を保存
+- 保存後に `kakeibo-goals-updated` イベントを発火
+- `GoalsAndDebt` 側はイベントを listen してローカル状態を再読込する
+
+## 7. 固定費見直し設計
+
+対象:
+
+- `src/lib/fixed-cost-flags.ts`
+- `src/lib/components/GoalsAndDebt.tsx`
+
+抽出条件:
+
+- `transaction.type === "expense"`
+- `transaction.is_fixed === true`
+- またはカテゴリ / メモが固定費らしいキーワードに一致
+
+グルーピング:
+
+- カテゴリ
+- 表示タイトル
+- 支払い方法
+
+評価要素:
+
+- サブスク系
+- 月収比 5% 以上
+- 月 1 万円以上
+- 同月複数回
+- 固定費として登録済み
+
+出力:
+
+- 優先度
+- 理由
+- 推奨アクション
+- 確認済み状態
+- 月単位の非表示状態
+
+## 8. 徳ポイント設計
+
+`calcVirtuePoints()` が月単位で取引を集計し、徳ポイントを算出する。
+
+評価要素:
+
+- 貯蓄率 20% 以上: `+10`
+- 貯蓄率 10% 以上: `+5`
+- 黒字: `+5`
+- 固定費率 35% 以下: `+3`
+- 変動費率 25% 以下: `+5`
+- 貯蓄または投資あり: `+2`
+
+出力:
+
+- `total`
+- `byMonth[] = { ym, points, reasons }`
+
+派生値:
+
+- `ticketsEarned = floor(total / 100)`
+- `ticketsAvailable = ticketsEarned - ticketsUsed`
+
+## 9. 認証設計
 
 認証方式:
 
 - Auth0 セッション認証
 - Google OAuth
 - LINE Login
-- メール系ログイン / 確認フロー
+- メール系ログイン
 
 設計ポイント:
 
 - 画面系は Auth0 セッション前提
 - API はセッション確認と same-origin を併用
-- webhook 系 API は same-origin ではなく署名検証で保護
+- webhook 系 API は署名検証で保護
 
-## 6. セキュリティ設計
+## 10. セキュリティ設計
 
-実装済みの主要制御:
+主要制御:
 
-- `requireSameOrigin` による CSRF 軽減
-- `rateLimit` による濫用抑制
-- `readJsonBody` によるサイズ制限つき JSON 読み取り
-- `boundedText` による入力長制限
-- webhook の JWT / 署名検証
-- SSRF 対策ユーティリティ
+- `requireSameOrigin`
+- `rateLimit`
+- `readJsonBody`
+- `boundedText`
+- webhook 署名検証
+- SSRF 対策
 
-今回の補強:
+補足:
 
-- `src/app/api/profile/route.ts` に same-origin と rate limit を追加
+- ローカル保存データは同一ブラウザ内の補助状態として扱う
+- 機密値は `.env.local` または Vercel 環境変数で管理
 
-## 7. カテゴリ設計
-
-`src/lib/utils.ts` の `CATEGORIES` に定義される支出カテゴリ（2026-04-25 時点）:
-
-- 食費 / 住居 / 水道・光熱費 / 通信費 / 交通費 / 医療費 / 日用品 / 娯楽 / レジャー / 趣味
-- 教育 / 自己投資 / 保険 / 税金 / 交際費 / サブスク / ペット / 美容・衣服
-- **ゲーム**（新規追加: 2026-04-25）
-- **推し活**（新規追加: 2026-04-25）
-- 寄付・支援 / その他
-
-CATEGORY_LABELS に英語ラベルを追加し、英語 UI でも正しく表示される。
-
-## 8. AI 店案内設計
-
-対象:
-
-- `src/lib/components/NearbyShopGuide.tsx`
-- `src/app/api/nearby-shops/route.ts`
-
-処理フロー:
-
-1. 画面で店種、エリア、自由入力キーワードを指定
-2. エリア入力時: `/api/nearby-shops` に送信 → Google Geocoding API（失敗時は Nominatim）でジオコーディング
-3. 現在地使用時: ブラウザの Geolocation API で座標を取得 → `/api/nearby-shops` に送信
-4. サーバーで Google Places API（New）を呼び出し（`GOOGLE_MAPS_API_KEY` 設定時）
-5. Google が失敗または 0 件の場合、サーバーから Overpass API（OSM）でフォールバック検索
-6. 距離順に最大 6 件へ整形し表示
-7. 0 件時はエラーコードと検索座標を診断情報としてレスポンスに付与し UI に表示
-
-設計意図:
-
-- サーバーが認証・レート制限・ジオコーディング・店舗検索をすべて担当
-- Google Maps API が有効な場合は優先して使用し、失敗または 0 件時は OSM へ自動フォールバック
-- OSM（Nominatim / Overpass）は無料・APIキー不要で常に予備として機能
-- Overpass 障害時は予備エンドポイント（overpass.kumi.systems）へ自動切り替え
-- 0 件時は Google/OSM のエラーコードと検索座標を診断情報として返し、原因の特定を容易にする
-
-## 9. 購入アドバイザー設計
-
-対象:
-
-- `src/lib/components/PurchaseAdvisor.tsx`
-
-機能:
-
-- 商品カテゴリ（日用品 / 家電・スマホ / 美容・ファッション / ゲーム / 推し活 / 車 / 住宅）を選択
-- 購入価格と AI 相場クエリを入力して相場を確認
-- 購入に必要な「労働日数」と「貯蓄月数」を数値で表示
-- 家・車はローン月額（PMT 公式）を計算し、収入に占める割合で購入可能ラインを判定
-- その他カテゴリは残余貯蓄で購入可能ラインを判定
-
-ローン計算式（PMT 公式）:
-
-```text
-月払い = P × r(1+r)^n / ((1+r)^n - 1)
-住宅: 35 年 / 年利 1%
-車:   5  年 / 年利 3%
-```
-
-アフォーダビリティ閾値:
-
-- 住宅ローン: 月額 ≤ 手取り月収の 25%
-- 車ローン:   月額 ≤ 手取り月収の 20%
-- その他:     価格 ≤ 月次余剰（収入 − 支出）
-
-目標連携:
-
-- 目標画面は `GenerationGoals` の「個人 / こども / シニア」切替と、`GoalsAndDebt` の詳細タブで構成
-- 購入アドバイザーで「目標に追加」ボタンを押すと `kakeibo-personal-goals`（ローカルストレージ）へ目標を保存
-- GoalsAndDebt コンポーネントが同キーを参照するため、目標画面の「個人」タブで進捗管理が可能
-- dark theme 時は目標画面の補助ラベルと小さな注記を明るめに補正し、可読性を確保
-- 大人ダッシュボードでは Charts Calendar AIChat FoodLifestyleAssistant を含むカード群の文字色・グラフラベル・入力欄コントラストを補正
-
-## 10. デプロイ設計
+## 11. デプロイ設計
 
 環境:
 
 - ローカル開発
-- Vercel Preview
-- Vercel Production
+- Vercel Preview Deployment
+- Vercel Production Deployment
 
-本番 URL: `https://kawaii0214.vercel.app`
+運用:
 
-デプロイ方針:
+- Preview Deployment をデモ環境として利用
+- Production Alias は `https://kawaii0214.vercel.app`
+- `.vercel/project.json` に Vercel project link を保持
 
-- Git push → main ブランチ → Vercel 自動デプロイ
-- 本番環境変数は Vercel 管理
-- `.env.local` はローカル専用
-
-## 11. 非機能要件
+## 12. 非機能要件
 
 - TypeScript による型安全
 - ESLint による静的検証
-- Next.js build 通過をリリース基準にする
-- セキュリティ境界を API 側で強制する
+- `next build` 通過をリリース条件とする
+- light / dark theme の可読性維持
 
-## 12. 今後の改善候補
+## 13. ブラウザ注意点
 
-- API ごとの rate limit 方針を明文化
-- 監査ログの追加
-- README と docs の多言語整理
-- AI 店案内の監視指標追加
-- postcss 依存チェーンの upgrade（next の Major 更新時）
+- `input[type="month"]` はブラウザによって専用ピッカーの挙動が異なる
+- Firefox / Safari では専用 UI が弱い場合があるため、`YYYY-MM` 手入力を許容する前提で運用する

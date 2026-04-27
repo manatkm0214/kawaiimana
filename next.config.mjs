@@ -1,4 +1,6 @@
-﻿/** @type {import('next').NextConfig} */
+﻿import withNextIntl from "next-intl/plugin";
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   generateBuildId: () => null,
   output: "standalone",
@@ -23,4 +25,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

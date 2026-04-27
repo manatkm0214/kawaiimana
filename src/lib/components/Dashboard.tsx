@@ -908,7 +908,7 @@ export default function Dashboard({
                       </div>
                       <div className="mt-2 flex flex-wrap gap-1">
                         {(lang === "en" ? flag.reasonsEn : flag.reasonsJa).map((reason) => (
-                          <span key={reason} className="rounded-full border border-black/10 bg-white/70 px-2 py-0.5 text-[10px] font-bold text-black">
+                          <span key={reason} className="rounded-full border border-black/20 bg-white/50 px-2 py-0.5 text-[10px] font-bold text-black">
                             {reason}
                           </span>
                         ))}
@@ -1051,8 +1051,8 @@ export default function Dashboard({
                         <span className="font-bold text-black">{getBudgetCategoryLabel(row.category, lang)}</span>
                         <span className="rounded-full bg-cyan-100 px-2.5 py-1 font-black text-black">{formatCurrency(row.targetAmount)}</span>
                       </div>
-                      <div className="mt-2 h-2 rounded-full bg-cyan-100">
-                        <div className={`h-2 rounded-full ${pct <= 100 ? "bg-cyan-400" : "bg-rose-400"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                      <div className="mt-2 h-2 rounded-full bg-cyan-600">
+                        <div className={`h-2 rounded-full ${pct <= 100 ? "bg-cyan-900" : "bg-rose-900"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                       </div>
                       <div className="mt-2 flex items-center justify-between text-sm font-bold text-black">
                         <span>{t.actual}: {formatCurrency(row.actualAmount)}</span>

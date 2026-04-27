@@ -133,7 +133,6 @@ body {
   color: #000 !important;
   font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
   line-height: 1.6;
-  font-weight: 900 !important;
   transition: background 180ms ease, color 180ms ease;
 }
 
@@ -186,7 +185,6 @@ li,
 label {
   line-height: 1.6;
   color: #000 !important;
-  font-weight: 900 !important;
 }
 
 button,
@@ -249,32 +247,41 @@ html[data-theme="light"] .border-violet-600 {
   border-color: #d8e2f0 !important;
 }
 
-html[data-theme="light"] .text-white,
-html[data-theme="light"] .text-slate-100,
-html[data-theme="light"] .text-slate-200,
-html[data-theme="light"] .text-slate-300,
-html[data-theme="light"] .text-slate-400,
-html[data-theme="light"] .text-slate-500,
-html[data-theme="light"] .text-cyan-100,
-html[data-theme="light"] .text-cyan-200,
-html[data-theme="light"] .text-emerald-100,
-html[data-theme="light"] .text-rose-100,
-html[data-theme="light"] .text-violet-300 {
-  color: #0f172a !important;
-}
-
-html[data-theme="light"] .text-slate-400,
-html[data-theme="light"] .text-slate-500 {
-  color: #1e293b !important;
-}
-
-html[data-theme="light"] .text-slate-300 {
-  color: #0f172a !important;
-}
 
 html[data-theme="light"] .placeholder-slate-500::placeholder,
 html[data-theme="light"] .placeholder-slate-400::placeholder {
   color: #64748b !important;
+}
+
+html[data-theme="light"] [class*="text-slate-100"],
+html[data-theme="light"] [class*="text-slate-200"],
+html[data-theme="light"] [class*="text-slate-300"],
+html[data-theme="light"] [class*="text-slate-400"],
+html[data-theme="light"] [class*="text-slate-500"],
+html[data-theme="light"] [class*="text-gray-100"],
+html[data-theme="light"] [class*="text-gray-200"],
+html[data-theme="light"] [class*="text-gray-300"],
+html[data-theme="light"] [class*="text-gray-400"],
+html[data-theme="light"] [class*="text-gray-500"],
+html[data-theme="light"] [class*="text-zinc-100"],
+html[data-theme="light"] [class*="text-zinc-200"],
+html[data-theme="light"] [class*="text-zinc-300"],
+html[data-theme="light"] [class*="text-zinc-400"],
+html[data-theme="light"] [class*="text-zinc-500"] {
+  color: #020617 !important;
+}
+
+html[data-theme="light"] [class*="text-slate-600"] {
+  color: #0f172a !important;
+}
+html[data-theme="light"] [class*="text-slate-700"] {
+  color: #020617 !important;
+}
+html[data-theme="light"] [class*="text-gray-600"],
+html[data-theme="light"] [class*="text-gray-700"],
+html[data-theme="light"] [class*="text-zinc-600"],
+html[data-theme="light"] [class*="text-zinc-700"] {
+  color: #020617 !important;
 }
 
 html[data-theme="light"] .bg-slate-950 input,
@@ -333,22 +340,8 @@ html[data-theme="light"] .metric-tile-accent {
 
 html[data-theme="light"] .dashboard-light-copy * {
   color: #000 !important;
-  font-weight: 900 !important;
 }
 
-/* 彩度を保つカラー — 黒マッピングから除外 */
-html[data-theme="light"] .dashboard-light-copy .text-red-600 {
-  color: #dc2626 !important;
-}
-html[data-theme="light"] .dashboard-light-copy .text-rose-600 {
-  color: #e11d48 !important;
-}
-html[data-theme="light"] .dashboard-light-copy .text-rose-700 {
-  color: #be123c !important;
-}
-html[data-theme="light"] .dashboard-light-copy .text-emerald-600 {
-  color: #059669 !important;
-}
 
 /* font-weight 保護 — text-sm強制上書きより優先 */
 html[data-theme="light"] .dashboard-light-copy .font-extrabold {
@@ -390,31 +383,39 @@ html[data-theme="light"] .dashboard-light-copy [class*="bg-slate-950"] {
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-rose-50"],
 html[data-theme="light"] .dashboard-light-copy [class*="bg-rose-950"] {
-  background: #fecdd3 !important;
+  background: #fb7185 !important;
   border-color: #be123c !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-amber-50"],
 html[data-theme="light"] .dashboard-light-copy [class*="bg-amber-950"] {
-  background: #fde68a !important;
+  background: #fbbf24 !important;
   border-color: #b45309 !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-cyan-50"],
 html[data-theme="light"] .dashboard-light-copy [class*="bg-cyan-950"] {
-  background: #a5f3fc !important;
+  background: #22d3ee !important;
   border-color: #0e7490 !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy [class*="bg-emerald-50"],
 html[data-theme="light"] .dashboard-light-copy [class*="bg-emerald-950"] {
-  background: #a7f3d0 !important;
+  background: #34d399 !important;
   border-color: #047857 !important;
 }
 
+html[data-theme="light"] .dashboard-light-copy [class*="bg-slate-50"] {
+  background: #94a3b8 !important;
+  border-color: #334155 !important;
+}
+
+html[data-theme="light"] .dashboard-light-copy [class*="text-slate-100"],
+html[data-theme="light"] .dashboard-light-copy [class*="text-slate-200"],
+html[data-theme="light"] .dashboard-light-copy [class*="text-slate-300"],
 html[data-theme="light"] .dashboard-light-copy [class*="text-slate-400"],
 html[data-theme="light"] .dashboard-light-copy [class*="text-slate-500"] {
-  color: #0f172a !important;
+  color: #020617 !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy .safety-contrast-card {
@@ -479,15 +480,15 @@ html[data-theme="light"] .dashboard-light-copy .border-dashed {
 }
 
 html[data-theme="light"] .dashboard-light-copy .bg-cyan-100 {
-  background-color: #a5f3fc !important;
+  background-color: #22d3ee !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy .bg-emerald-100 {
-  background-color: #a7f3d0 !important;
+  background-color: #34d399 !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy .bg-amber-100 {
-  background-color: #fde68a !important;
+  background-color: #fbbf24 !important;
 }
 
 html[data-theme="light"] .dashboard-light-copy .bg-pink-100 {
@@ -645,7 +646,7 @@ html[data-theme="light"] .legal-card {
 }
 
 .garden-note {
-  color: #475569;
+  color: #020617;
 }
 
 .garden-mini-card {
@@ -1137,18 +1138,28 @@ html[data-theme="dark"] .dashboard-clarity textarea::placeholder {
   opacity: 1;
 }
 
+
 html[data-theme="dark"] .dashboard-clarity .text-xs,
 html[data-theme="dark"] .dashboard-clarity [class*="text-[10px]"],
-html[data-theme="dark"] .dashboard-clarity [class*="text-[11px]"] {
-  letter-spacing: 0.01em;
-  font-weight: 600;
+html[data-theme="dark"] .dashboard-clarity [class*="text-[11px]"],
+html[data-theme="dark"] .dashboard-clarity .text-slate-400,
+html[data-theme="dark"] .dashboard-clarity .text-slate-500,
+html[data-theme="dark"] .dashboard-clarity .text-slate-300,
+html[data-theme="dark"] .dashboard-clarity .text-slate-200,
+html[data-theme="dark"] .dashboard-clarity .text-slate-100,
+html[data-theme="dark"] .dashboard-clarity .text-rose-700,
+html[data-theme="dark"] .dashboard-clarity .text-rose-600,
+html[data-theme="dark"] .dashboard-clarity .text-red-600 {
+  color: #000 !important;
+  font-weight: 900 !important;
 }
 
 html[data-theme="dark"] .dashboard-clarity .recharts-text,
 html[data-theme="dark"] .dashboard-clarity .recharts-cartesian-axis-tick-value,
 html[data-theme="dark"] .dashboard-clarity .recharts-polar-angle-axis-tick-value,
 html[data-theme="dark"] .dashboard-clarity .recharts-legend-item-text {
-  fill: #e7eef8 !important;
+  fill: #000 !important;
+  font-weight: 900 !important;
 }
 
 html[data-theme="dark"] .dashboard-clarity .recharts-cartesian-grid-horizontal line,
