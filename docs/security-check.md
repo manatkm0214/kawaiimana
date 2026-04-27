@@ -5,13 +5,8 @@
 - 対象アプリ: かわいい家計簿 / `kakeibo-app`
 - 本番 URL: `https://kawaii0214.vercel.app`
 - ドキュメント更新日: 2026-04-27
-- 直近の検証結果反映日: 2026-04-26
-- 実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認、本番 URL 確認、本番ログ確認
-
-補足:
-
-- 本書の数値サマリーは 2026-04-26 に取得した検証結果をベースにしています
-- 2026-04-27 時点のドキュメント更新では、機能面の記述を現行実装に合わせて整理しました
+- 直近の検証結果反映日: 2026-04-27
+- 実施範囲: 依存パッケージ監査、ビルド検証、静的シークレット検査、API 防御状況の確認、コードセキュリティレビュー（ブランチ `kawaii0214`）
 
 ## 2. 数値サマリー
 
@@ -28,8 +23,9 @@
 - `same-origin` 防御あり: `16 / 17`
 - `rateLimit` 適用あり: `7 / 17`
 - ビルド失敗件数: `0`
-- 非ブロッキング build warning 件数: `2`
-- 直近 1 時間の production error log 件数: `0`
+- 非ブロッキング build warning 件数: `3`（依存由来: `@auth0/nextjs-auth0` × 1、`jose` Edge Runtime × 2）
+- TypeScript エラー件数: `0`
+- ESLint エラー / 警告件数: `0`
 
 ## 3. 総合評価の算出方法
 
@@ -86,13 +82,9 @@ src/app/api/auth/send-email/route.ts
 
 - ESLint: `0` errors / `0` warnings
 - TypeScript: `0` errors
+- ESLint: `0` errors / `0` warnings
 - `next build`: 成功
-- build warning `2` 件は依存由来で、現時点で出荷ブロッカーではない
-
-### 5.5 本番ログ確認
-
-- `vercel logs --environment production --level error --since 1h --limit 20 --no-follow --no-branch` の結果、直近 1 時間の production error log は `0 件`
-- 本番エイリアス `https://kawaii0214.vercel.app` は有効
+- build warning `3` 件は依存由来（`@auth0/nextjs-auth0` dpopUtils × 1、`jose` Edge Runtime × 2）で、現時点で出荷ブロッカーではない
 
 ## 6. 現行実装に即したセキュリティメモ
 
@@ -124,14 +116,27 @@ src/app/api/auth/send-email/route.ts
 - `input[type="month"]` はブラウザ差異がある
 - 専用ピッカー非対応時でも `YYYY-MM` 手入力で扱える運用にしている
 
-## 7. 残課題と所見
+## 7. コードセキュリティレビュー結果（2026-04-27）
+
+ブランチ `kawaii0214` の差分に対して、以下の4候補を詳細分析しました。
+
+| 候補 | ファイル | 判定 | 理由 |
+|------|---------|------|------|
+| AIプロンプトへのユーザーデータ埋め込み | `src/app/api/ai/route.ts` | ✅ 問題なし | 同一ユーザーの自データのみ対象。AIプロンプトへのユーザーデータ埋め込みは脆弱性非該当 |
+| `JSON.parse` try/catch 欠如 | `FoodLifestyleAssistant.tsx:251` | ✅ 問題なし | Node.js 12+ で `__proto__` pollution 不可。クラッシュは DoS 除外対象 |
+| Puppeteer `--no-sandbox` | `scripts/export-*.js` | ✅ 問題なし | 信頼済みローカル HTML のみ処理。外部入力なし。ハードニング欠如は脆弱性非該当 |
+| 財務データの外部 AI API 送信 | `src/app/api/ai/route.ts` | ✅ 問題なし | 認証済みユーザー自身の集計データ。PII・シークレット含まず。意図した機能 |
+
+**判定: 高信頼度の脆弱性 0 件**
+
+## 8. 残課題と所見
 
 - `rateLimit` は全 `POST` API 一律ではないため、対象拡大の余地あり
 - 依存由来の build warning は継続監視が必要
 - 外部からの動的ペネトレーションテストは未実施
 - ローカル保存データは端末依存であるため、将来的にはサーバー同期の設計余地がある
 
-## 8. 総合判定
+## 9. 総合判定
 
 - 現在の確認範囲では `npm audit` 脆弱性は `0 件`
 - 重大な秘密情報の Git 混入は未検出
