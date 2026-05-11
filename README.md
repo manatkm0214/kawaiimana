@@ -1,21 +1,43 @@
 # かわいい家計簿
 
-収支記録・予算管理・目標管理・AI相談・周辺店舗検索を1つにまとめたWebアプリです。
-
-**本番URL:** https://kawaii0214.vercel.app
+個人の資産形成を支援するフルスタック家計管理Webアプリケーションです。
+収支記録・予算管理・目標設計・AI分析・周辺店舗検索を単一のダッシュボードに統合しています。
 
 ---
 
-## 機能一覧
+## 開発の背景
 
-- **家計管理** — 収支入力・月次集計・カテゴリ別グラフ可視化
-- **予算管理** — プリセット設定・超過アラート・トレードオフ提案
-- **目標タブ** — ローン管理・先取積み立て・個人目標・固定費見直し・徳ポイント
-- **購入アドバイザー** — 労働日数・貯蓄月数換算による大きな買い物の判断支援
-- **AI機能** — 月次AI分析・AIチャット・AI節約相談・AI店案内
-- **周辺店舗検索** — Google Maps優先 / OpenStreetMapフォールバック
-- **認証** — Google / LINE / メール（Auth0）
-- **その他** — PDF出力・問い合わせフォーム・表示カスタマイズ
+「お金の不安を、見える化と行動で解消する」をコンセプトに設計しました。
+単なる収支記録にとどまらず、ローン返済・先取積み立て・大きな買い物の判断支援まで、家計に関する意思決定を一元的にサポートすることを目指しています。
+
+---
+
+## 主要機能
+
+### 収支・予算管理
+- 収支入力・月次集計・カテゴリ別グラフ可視化
+- 予算プリセット設定、超過アラート、トレードオフ提案
+
+### 目標設計
+- **ローン管理** — 残高・月返済額・完済予定・返済進捗の可視化
+- **先取積み立て** — 旅行・車検・家電など予定支出の計画的積み立て
+- **個人目標** — ご褒美・推し活などの目標管理
+- **固定費見直し** — 月次固定費候補のレビューと確認済み管理
+- **徳ポイント** — 節約行動を可視化するポイントシステム
+
+### AI機能
+- 月次AI分析レポート（支出傾向・改善提案）
+- AIチャット相談・AI節約アドバイス
+- 位置情報連動のAI店案内
+
+### 購入アドバイザー
+- 大きな買い物を「労働日数」「貯蓄月数」「ローン返済可否」で多角的に評価
+- 個人目標への追加連携
+
+### その他
+- Google / LINE / メール認証（Auth0）
+- Google Maps優先 / OpenStreetMapフォールバックの周辺店舗検索
+- PDF出力・問い合わせフォーム
 
 ---
 
@@ -27,70 +49,55 @@
 | 言語 | TypeScript |
 | UI | React 18 / Tailwind CSS 4 |
 | 認証 | Auth0 |
-| データベース | Supabase |
-| AI | Google Gemini / OpenAI |
+| データベース | Supabase (PostgreSQL) |
+| AI | Google Gemini 2.5 Flash / OpenAI |
 | 地図 | Google Maps API / OpenStreetMap |
 | メール | Resend |
 | ホスティング | Vercel |
 
 ---
 
-## ローカルで動かす
+## アーキテクチャ
 
-### 1. リポジトリをクローン
+```
+クライアント (React / Tailwind CSS)
+    │
+    ├── Next.js App Router (サーバーコンポーネント / API Routes)
+    │       ├── /api/ai         — Gemini / OpenAI 呼び出し
+    │       ├── /api/nearby-shops — Google Maps / Overpass API
+    │       └── /api/contact    — Resend メール送信
+    │
+    ├── Supabase (DB / Storage / Auth Hook)
+    └── Auth0 (Google / LINE / メール認証)
+```
+
+---
+
+## セキュリティ対策
+
+- 全APIルートに同一オリジン検証（`requireSameOrigin`）とレートリミット実装
+- シークレット類は環境変数で管理、`.env*` は Git 除外
+- Auth0 + Supabase Row Level Security による多層認証・認可
+- `npm audit` 脆弱性 0件・TypeScript エラー 0件・ESLint 警告 0件（2026-04-27 時点）
+
+詳細は [セキュリティチェック報告書](./docs/security-check.md) を参照してください。
+
+---
+
+## ローカル環境構築
 
 ```bash
-git clone https://github.com/manatkm0214/kakeibo-propro1.git
+git clone https://sl1nk.com/v06etv4
 cd kakeibo-propro1
 npm install
+cp .env.example .env.local   # 各サービスのキーを設定
+npm run dev                  # http://localhost:3000
 ```
 
-### 2. 環境変数を設定
+必要な外部サービス: Supabase / Auth0 / Google Cloud / Gemini API / Resend
+詳細は [.env.example](./.env.example) を参照してください。
 
-```bash
-cp .env.example .env.local
-```
-
-`.env.local` を開き、各サービスから値を取得して設定してください。
-
-| サービス | 取得場所 | 必要なキー |
-|----------|----------|-----------|
-| [Supabase](https://supabase.com) | Project Settings → API | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
-| [Auth0](https://auth0.com) | Applications → 対象アプリ | `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_SECRET` |
-| [LINE Developers](https://developers.line.biz) | LINE Login チャネル | `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET` |
-| [Google Cloud](https://console.cloud.google.com) | APIs & Services → 認証情報 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_MAPS_API_KEY` |
-| [Google AI Studio](https://aistudio.google.com) | APIキー | `GEMINI_API_KEY` |
-| [Resend](https://resend.com) | API Keys | `RESEND_API_KEY` |
-
-### 3. 開発サーバーを起動
-
-```bash
-npm run dev
-```
-
-`http://localhost:3000` で確認できます。
-
-> **デモアカウントで試す場合:** 外部サービスの設定なしに、デモ用メール＋パスワードでログインして主要機能を確認できます。
+> **デモで試す場合:** デモアカウント（メール＋パスワード）でログインすれば、外部サービスの設定なしに主要機能を確認できます。
 
 ---
 
-## 画面構成
-
-```
-/ (ランディング)
-└── /dashboard
-    ├── 収支タブ       — 入力・集計・グラフ
-    ├── 予算タブ       — プリセット・超過確認
-    ├── 目標タブ       — ローン・積み立て・個人目標・固定費・徳ポイント
-    ├── AI相談タブ     — 分析・チャット・節約相談
-    └── お店案内タブ   — 周辺店舗マップ検索
-```
-
----
-
-## ドキュメント
-
-- [仕様書](./docs/specification.md)
-- [設計書](./docs/design.md)
-- [取り扱い説明書](./docs/user-manual.md)
-- [セキュリティチェック報告書](./docs/security-check.md)
