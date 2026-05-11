@@ -54,14 +54,42 @@
 
 ## ローカル開発
 
+### 1. リポジトリをクローン
+
 ```bash
+git clone https://github.com/manakaren/kakeibo-app.git
+cd kakeibo-app
 npm install
+```
+
+### 2. 環境変数を設定
+
+```bash
 cp .env.example .env.local
-# .env.local に必要な値を設定
+```
+
+`.env.local` を開き、各サービスから取得した値を設定してください。
+
+| サービス | 取得場所 | 必要なキー |
+|----------|----------|-----------|
+| [Supabase](https://supabase.com) | Project Settings → API | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
+| [Auth0](https://auth0.com) | Applications → 対象アプリ | `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_SECRET` |
+| [LINE Developers](https://developers.line.biz) | LINE Login チャネル | `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET` |
+| [Google Cloud](https://console.cloud.google.com) | APIs & Services → 認証情報 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_MAPS_API_KEY` |
+| [Google AI Studio](https://aistudio.google.com) | APIキー | `GEMINI_API_KEY` |
+| [Resend](https://resend.com) | API Keys | `RESEND_API_KEY` |
+
+`APP_BASE_URL` はローカルでは `http://localhost:3000` のままで動作します。
+
+### 3. 開発サーバー起動
+
+```bash
 npm run dev
 ```
 
 ローカル URL: `http://localhost:3000`
+
+> **デモ確認のみの場合**: デモアカウント（メール＋パスワード）でログインすれば、外部サービスの設定なしに主要機能を試せます。
 
 ## 検証コマンド
 
